@@ -48,16 +48,18 @@ export function Thumb({
   data,
   isVideo,
 }: {
-  data: { label: string; accent: string };
+  data: { label: string; accent: string; url?: string };
   isVideo: boolean;
 }) {
+  const hasImage = !!data.url;
   return (
     <div
       style={{
         width: "100%",
         aspectRatio: isVideo ? "9/16" : "4/5",
-        background:
-          "repeating-linear-gradient(45deg, #13131c 0px, #13131c 4px, #1a1a28 4px, #1a1a28 12px)",
+        background: hasImage
+          ? `#000 center/cover no-repeat url(${JSON.stringify(data.url)})`
+          : "repeating-linear-gradient(45deg, #13131c 0px, #13131c 4px, #1a1a28 4px, #1a1a28 12px)",
         borderRadius: 8,
         display: "flex",
         flexDirection: "column",
@@ -73,11 +75,12 @@ export function Thumb({
           width: 32,
           height: 32,
           borderRadius: "50%",
-          background: data.accent + "30",
-          border: `1px solid ${data.accent}50`,
+          background: data.accent + (hasImage ? "60" : "30"),
+          border: `1px solid ${data.accent}${hasImage ? "" : "50"}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          backdropFilter: hasImage ? "blur(4px)" : undefined,
         }}
       >
         {isVideo && (
@@ -87,7 +90,7 @@ export function Thumb({
               height: 0,
               borderTop: "6px solid transparent",
               borderBottom: "6px solid transparent",
-              borderLeft: `10px solid ${data.accent}`,
+              borderLeft: `10px solid ${hasImage ? "#fff" : data.accent}`,
               marginLeft: 2,
             }}
           />
@@ -98,23 +101,25 @@ export function Thumb({
               width: 10,
               height: 10,
               borderRadius: 2,
-              background: data.accent + "80",
+              background: (hasImage ? "#fff" : data.accent) + "c0",
             }}
           />
         )}
       </div>
-      <span
-        style={{
-          fontSize: 9,
-          color: "#ffffff30",
-          fontFamily: "Space Mono, monospace",
-          textAlign: "center",
-          padding: "0 12px",
-          lineHeight: 1.4,
-        }}
-      >
-        {data.label}
-      </span>
+      {!hasImage && (
+        <span
+          style={{
+            fontSize: 9,
+            color: "#ffffff30",
+            fontFamily: "Space Mono, monospace",
+            textAlign: "center",
+            padding: "0 12px",
+            lineHeight: 1.4,
+          }}
+        >
+          {data.label}
+        </span>
+      )}
     </div>
   );
 }

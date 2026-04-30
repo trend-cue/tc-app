@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Project, QueryData } from "@/lib/types";
-import { getQueryData, getAllPosts } from "@/lib/mock-data";
+import { Post, Project, QueryData } from "@/lib/types";
+import { getQueryData } from "@/lib/mock-data";
+import { fetchPosts, derivedClusters } from "@/lib/posts-db";
+import { EXPLORE_TOPICS } from "@/lib/explore-topics";
 import { IconTrend, IconAlert, IconLogout } from "./icons";
 import { SearchBar } from "./search-bar";
 import { DiscoverView } from "./discover-view";
@@ -20,6 +22,7 @@ function Header({
   accent,
   userEmail,
   onLogout,
+  onHome,
 }: {
   tab: string;
   setTab: (t: string) => void;
@@ -27,6 +30,7 @@ function Header({
   accent: string;
   userEmail: string;
   onLogout: () => void;
+  onHome: () => void;
 }) {
   const initials = userEmail
     .split("@")[0]
@@ -48,7 +52,15 @@ function Header({
         zIndex: 10,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div
+        onClick={onHome}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          cursor: "pointer",
+        }}
+      >
         <div
           style={{
             width: 26,
@@ -239,6 +251,11 @@ export function AppShell() {
   } | null>(null);
   const [userEmail, setUserEmail] = useState("");
   const [dbReady, setDbReady] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    fetchPosts(supabase).then(setPosts);
+  }, [supabase]);
 
   // Load user
   useEffect(() => {
@@ -293,7 +310,7 @@ export function AppShell() {
     loadProjects();
   }, [loadProjects]);
 
-  const allPosts = getAllPosts();
+  const allPosts = posts;
 
   const isPostSaved = (postId: string) =>
     projects.some((p) => p.postIds.includes(postId));
@@ -405,6 +422,44 @@ export function AppShell() {
     );
   };
 
+  const handleClusterOpen = (clusterId: string) => {
+    const cluster = derivedClusters(posts).find((c) => c.id === clusterId);
+    if (!cluster) return;
+    const inCluster = posts.filter((p) => p.clusterId === clusterId);
+    setTab("discover");
+    setQuery(cluster.name);
+    setLoading(false);
+    setQueryData({
+      analysisTime: 0,
+      totalPosts: inCluster.length,
+      posts: inCluster,
+      clusters: [cluster],
+    });
+  };
+
+  const handleTopicOpen = (topicId: string) => {
+    const topic = EXPLORE_TOPICS.find((t) => t.id === topicId);
+    if (!topic) return;
+    const matching = posts.filter(topic.match);
+    if (matching.length === 0) return;
+    setTab("discover");
+    setQuery(topic.label);
+    setLoading(false);
+    setQueryData({
+      analysisTime: 0,
+      totalPosts: matching.length,
+      posts: matching,
+      clusters: derivedClusters(matching),
+    });
+  };
+
+  const handleHome = () => {
+    setTab("discover");
+    setQuery("");
+    setQueryData(null);
+    setLoading(false);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
@@ -428,6 +483,7 @@ export function AppShell() {
         accent={accent}
         userEmail={userEmail}
         onLogout={handleLogout}
+        onHome={handleHome}
       />
 
       {tab === "discover" && (
@@ -471,11 +527,14 @@ export function AppShell() {
             </div>
           )}
           <DiscoverView
+            posts={posts}
             queryData={queryData}
             loading={loading}
             accent={accent}
             density="spacious"
             onSearch={handleSearch}
+            onClusterOpen={handleClusterOpen}
+            onTopicOpen={handleTopicOpen}
             setQuery={setQuery}
             isPostSaved={isPostSaved}
             openPicker={openPicker}

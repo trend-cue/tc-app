@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { QueryData, Post } from "@/lib/types";
-import { getAllClusters, getAllPosts, SUGGESTIONS } from "@/lib/mock-data";
+import { derivedClusters } from "@/lib/posts-db";
+import { topicsWithMatches } from "@/lib/explore-topics";
 import { IconSearch } from "./icons";
 import { PostCard } from "./post-card";
 import { ClusterPill } from "./cluster-pill";
@@ -10,26 +11,34 @@ import { DetailPanel } from "./detail-panel";
 import { FilterBar } from "./filter-bar";
 
 function GeneralDiscovery({
+  posts,
   onSearch,
+  onClusterOpen,
+  onTopicOpen,
   setQuery,
   accent,
   isPostSaved,
   openPicker,
 }: {
+  posts: Post[];
   onSearch: (q: string) => void;
+  onClusterOpen: (clusterId: string) => void;
+  onTopicOpen: (topicId: string) => void;
   setQuery: (q: string) => void;
   accent: string;
   isPostSaved: (id: string) => boolean;
   openPicker: (postId: string, e: React.MouseEvent) => void;
 }) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const allClusters = getAllClusters();
+  const allClusters = derivedClusters(posts);
   const breakouts = allClusters
     .filter((c) => c.tag.includes("Breakout"))
     .slice(0, 6);
-  const hotPosts = getAllPosts()
+  const hotPosts = [...posts]
     .sort((a, b) => b.trendScore - a.trendScore)
     .slice(0, 6);
+
+  const exploreTopics = topicsWithMatches(posts);
 
   const platformCounts = hotPosts.reduce(
     (acc, p) => {
@@ -79,10 +88,7 @@ function GeneralDiscovery({
             {breakouts.map((c, i) => (
               <div
                 key={c.id}
-                onClick={() => {
-                  setQuery(c.topic);
-                  onSearch(c.topic);
-                }}
+                onClick={() => onClusterOpen(c.id)}
                 className="card-enter"
                 style={{
                   animationDelay: `${i * 0.05}s`,
@@ -177,10 +183,7 @@ function GeneralDiscovery({
                     />
                   </div>
                   <span style={{ fontSize: 10, color: "#505070", flexShrink: 0 }}>
-                    {c.postCount.toLocaleString()} posts ·{" "}
-                    <span style={{ color: "#606080", fontStyle: "italic" }}>
-                      {c.topic}
-                    </span>
+                    {c.postCount.toLocaleString()} posts · score {c.trendScore}
                   </span>
                 </div>
               </div>
@@ -256,14 +259,13 @@ function GeneralDiscovery({
               gap: 4,
             }}
           >
-            {SUGGESTIONS.map((s) => (
+            {exploreTopics.map(({ topic, posts: tposts }) => (
               <div
-                key={s}
-                onClick={() => {
-                  setQuery(s);
-                  onSearch(s);
-                }}
+                key={topic.id}
+                onClick={() => onTopicOpen(topic.id)}
                 style={{
+                  display: "flex",
+                  alignItems: "center",
                   fontSize: 12,
                   color: "#a0a0c0",
                   cursor: "pointer",
@@ -289,7 +291,17 @@ function GeneralDiscovery({
                 >
                   →
                 </span>
-                {s}
+                <span style={{ flex: 1 }}>{topic.label}</span>
+                <span
+                  style={{
+                    fontSize: 10,
+                    color: "#505070",
+                    fontFamily: "Space Mono, monospace",
+                    marginLeft: 6,
+                  }}
+                >
+                  {tposts.length}
+                </span>
               </div>
             ))}
           </div>
@@ -364,42 +376,40 @@ function GeneralDiscovery({
           })}
         </div>
 
-        {selectedPost && (
-          <div
-            style={{
-              background: "#0d0d16",
-              border: "1px solid #1a1a28",
-              borderRadius: 12,
-              overflow: "hidden",
-            }}
-          >
-            <DetailPanel
-              post={selectedPost}
-              onClose={() => setSelectedPost(null)}
-              accent={accent}
-            />
-          </div>
-        )}
       </div>
+
+      {selectedPost && (
+        <DetailPanel
+          post={selectedPost}
+          onClose={() => setSelectedPost(null)}
+          accent={accent}
+        />
+      )}
     </div>
   );
 }
 
 export function DiscoverView({
+  posts,
   queryData,
   loading,
   accent,
   density,
   onSearch,
+  onClusterOpen,
+  onTopicOpen,
   setQuery,
   isPostSaved,
   openPicker,
 }: {
+  posts: Post[];
   queryData: QueryData | null;
   loading: boolean;
   accent: string;
   density: string;
   onSearch: (q: string) => void;
+  onClusterOpen: (clusterId: string) => void;
+  onTopicOpen: (topicId: string) => void;
   setQuery: (q: string) => void;
   isPostSaved: (id: string) => boolean;
   openPicker: (postId: string, e: React.MouseEvent) => void;
@@ -477,7 +487,10 @@ export function DiscoverView({
   if (!queryData)
     return (
       <GeneralDiscovery
+        posts={posts}
         onSearch={onSearch}
+        onClusterOpen={onClusterOpen}
+        onTopicOpen={onTopicOpen}
         setQuery={setQuery}
         accent={accent}
         isPostSaved={isPostSaved}

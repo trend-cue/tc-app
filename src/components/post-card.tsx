@@ -134,7 +134,7 @@ export function PostCard({
           marginBottom: 12,
         }}
       >
-        {post.hashtags.map((t) => (
+        {Array.from(new Set(post.hashtags)).map((t) => (
           <span
             key={t}
             style={{
