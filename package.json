@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "ingest:tiktok": "node --env-file=.env.local --import tsx scripts/ingest-tiktok.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
@@ -21,6 +22,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4.1.6",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

@@ -13,7 +13,8 @@ export interface Post {
   postedAt: string;
   isVideo: boolean;
   hashtags: string[];
-  thumbnail: { label: string; accent: string };
+  sourceUrl?: string;
+  thumbnail: { label: string; accent: string; url?: string };
   whyTrending: {
     summary: string;
     signals: { label: string; value: string; note: string }[];
