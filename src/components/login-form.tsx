@@ -3,20 +3,27 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
+  acceptWorkspaceInvitation,
+  createOrganizationForCurrentUser,
+} from "@/lib/organization";
+import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_POLICY_MESSAGE,
   getPasswordPolicyError,
 } from "@/lib/auth/password-policy";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [organizationName, setOrganizationName] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+  const inviteToken = searchParams.get("invite") || "";
 
   const accent = "oklch(0.72 0.18 210)";
 
@@ -27,6 +34,10 @@ export function LoginForm() {
 
     try {
       if (isSignUp) {
+        if (!inviteToken && !organizationName.trim()) {
+          throw new Error("Organisation name is required");
+        }
+
         const passwordPolicyError = getPasswordPolicyError(password);
 
         if (passwordPolicyError) {
@@ -34,14 +45,29 @@ export function LoginForm() {
           return;
         }
 
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
+
+        if (!data.session) {
+          setError("Check your email to confirm your account, then sign in.");
+          return;
+        }
+
+        if (inviteToken) {
+          await acceptWorkspaceInvitation(supabase, inviteToken);
+        } else {
+          await createOrganizationForCurrentUser(supabase, organizationName.trim());
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
+
+        if (inviteToken) {
+          await acceptWorkspaceInvitation(supabase, inviteToken);
+        }
       }
       router.push("/dashboard");
       router.refresh();
@@ -150,7 +176,11 @@ export function LoginForm() {
             marginBottom: 28,
           }}
         >
-          {isSignUp ? "Start discovering trends" : "Sign in to continue"}
+          {inviteToken
+            ? "Accept your TrendCue invitation"
+            : isSignUp
+              ? "Start discovering trends"
+              : "Sign in to continue"}
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -192,7 +222,7 @@ export function LoginForm() {
             />
           </div>
 
-          <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: isSignUp && !inviteToken ? 16 : 24 }}>
             <label
               style={{
                 fontSize: 11,
@@ -246,6 +276,46 @@ export function LoginForm() {
               </p>
             )}
           </div>
+
+          {isSignUp && !inviteToken && (
+            <div style={{ marginBottom: 24 }}>
+              <label
+                style={{
+                  fontSize: 11,
+                  color: "#505070",
+                  letterSpacing: "0.06em",
+                  display: "block",
+                  marginBottom: 6,
+                }}
+              >
+                ORGANISATION
+              </label>
+              <input
+                type="text"
+                value={organizationName}
+                onChange={(e) => setOrganizationName(e.target.value)}
+                placeholder="Acme Studio"
+                required={isSignUp && !inviteToken}
+                style={{
+                  width: "100%",
+                  background: "#111119",
+                  border: "1px solid #1e1e2e",
+                  borderRadius: 10,
+                  padding: "12px 14px",
+                  fontSize: 14,
+                  color: "#e8e8f0",
+                  fontFamily: "Space Grotesk, sans-serif",
+                  outline: "none",
+                }}
+                onFocus={(e) =>
+                  (e.currentTarget.style.borderColor = `${accent}55`)
+                }
+                onBlur={(e) =>
+                  (e.currentTarget.style.borderColor = "#1e1e2e")
+                }
+              />
+            </div>
+          )}
 
           {error && (
             <div

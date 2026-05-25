@@ -423,7 +423,7 @@ export function ProjectsView({
   projects: Project[];
   allPosts: Post[];
   onTogglePost: (projectId: string, postId: string) => void;
-  onCreate: (name: string, color: string) => string;
+  onCreate: (name: string, color: string) => Promise<string>;
   onDelete: (id: string) => void;
   onRename: (id: string, name: string) => void;
   accent: string;
@@ -439,11 +439,18 @@ export function ProjectsView({
       new Date(a.updated_at || a.created_at).getTime()
   );
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!newName.trim()) return;
-    onCreate(newName.trim(), newColor);
-    setCreatingNew(false);
-    setNewName("");
+    try {
+      await onCreate(newName.trim(), newColor);
+      setCreatingNew(false);
+      setNewName("");
+    } catch (error) {
+      console.warn(
+        "Failed to create project:",
+        error instanceof Error ? error.message : error
+      );
+    }
   };
 
   const active = projects.find((p) => p.id === activeProject);

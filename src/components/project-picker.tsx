@@ -19,7 +19,7 @@ export function ProjectPicker({
   y: number;
   projects: Project[];
   onToggle: (projectId: string, postId: string) => void;
-  onCreate: (name: string, color: string) => string;
+  onCreate: (name: string, color: string) => Promise<string>;
   onClose: () => void;
   accent: string;
 }) {
@@ -39,12 +39,19 @@ export function ProjectPicker({
   const left = Math.min(x, window.innerWidth - 240);
   const top = Math.min(y + 8, window.innerHeight - 320);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!newName.trim()) return;
-    const id = onCreate(newName.trim(), newColor);
-    onToggle(id, postId);
-    setCreating(false);
-    setNewName("");
+    try {
+      const id = await onCreate(newName.trim(), newColor);
+      await onToggle(id, postId);
+      setCreating(false);
+      setNewName("");
+    } catch (error) {
+      console.warn(
+        "Failed to create project:",
+        error instanceof Error ? error.message : error
+      );
+    }
   };
 
   const sortedProjects = [...projects].sort(

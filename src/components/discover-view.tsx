@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { QueryData, Post } from "@/lib/types";
 import { derivedClusters } from "@/lib/posts-db";
 import { topicsWithMatches } from "@/lib/explore-topics";
+import {
+  industryScoreForPost,
+  sortClustersForIndustries,
+  sortPostsForIndustries,
+} from "@/lib/industries";
 import { PostCard } from "./post-card";
 import { ClusterPill } from "./cluster-pill";
 import { DetailPanel } from "./detail-panel";
@@ -14,6 +19,7 @@ function GeneralDiscovery({
   onClusterOpen,
   onTopicOpen,
   accent,
+  preferredIndustryKeys,
   isPostSaved,
   openPicker,
 }: {
@@ -21,19 +27,32 @@ function GeneralDiscovery({
   onClusterOpen: (clusterId: string) => void;
   onTopicOpen: (topicId: string) => void;
   accent: string;
+  preferredIndustryKeys: string[];
   isPostSaved: (id: string) => boolean;
   openPicker: (postId: string, e: React.MouseEvent) => void;
 }) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const allClusters = derivedClusters(posts);
+  const allClusters = sortClustersForIndustries(
+    derivedClusters(posts),
+    preferredIndustryKeys
+  );
   const breakouts = allClusters
     .filter((c) => c.tag.includes("Breakout"))
     .slice(0, 6);
-  const hotPosts = [...posts]
-    .sort((a, b) => b.trendScore - a.trendScore)
-    .slice(0, 6);
+  const hotPosts = sortPostsForIndustries(posts, preferredIndustryKeys).slice(0, 6);
 
-  const exploreTopics = topicsWithMatches(posts);
+  const exploreTopics = topicsWithMatches(posts).sort((a, b) => {
+    if (preferredIndustryKeys.length === 0) return b.posts.length - a.posts.length;
+    const aScore = Math.max(
+      ...a.posts.map((post) => industryScoreForPost(post, preferredIndustryKeys)),
+      0
+    );
+    const bScore = Math.max(
+      ...b.posts.map((post) => industryScoreForPost(post, preferredIndustryKeys)),
+      0
+    );
+    return bScore - aScore || b.posts.length - a.posts.length;
+  });
 
   const platformCounts = hotPosts.reduce(
     (acc, p) => {
@@ -394,6 +413,7 @@ export function DiscoverView({
   onTopicOpen,
   isPostSaved,
   openPicker,
+  preferredIndustryKeys,
 }: {
   posts: Post[];
   queryData: QueryData | null;
@@ -404,6 +424,7 @@ export function DiscoverView({
   onTopicOpen: (topicId: string) => void;
   isPostSaved: (id: string) => boolean;
   openPicker: (postId: string, e: React.MouseEvent) => void;
+  preferredIndustryKeys: string[];
 }) {
   const [activeCluster, setActiveCluster] = useState<string | null>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -422,13 +443,16 @@ export function DiscoverView({
   const visiblePosts = allPosts
     .filter((p) => !activeCluster || p.clusterId === activeCluster)
     .filter((p) => platform === "all" || p.platform === platform)
-    .sort((a, b) =>
-      sort === "trending"
-        ? b.trendScore - a.trendScore
-        : sort === "engagement"
-          ? b.likes + b.shares - (a.likes + a.shares)
-          : 0
-    );
+    .sort((a, b) => {
+      const preferenceDiff =
+        industryScoreForPost(b, preferredIndustryKeys) -
+        industryScoreForPost(a, preferredIndustryKeys);
+      if (sort === "trending") return preferenceDiff || b.trendScore - a.trendScore;
+      if (sort === "engagement") {
+        return preferenceDiff || b.likes + b.shares - (a.likes + a.shares);
+      }
+      return preferenceDiff;
+    });
 
   if (loading)
     return (
@@ -482,6 +506,7 @@ export function DiscoverView({
           onClusterOpen={onClusterOpen}
           onTopicOpen={onTopicOpen}
           accent={accent}
+          preferredIndustryKeys={preferredIndustryKeys}
           isPostSaved={isPostSaved}
           openPicker={openPicker}
       />

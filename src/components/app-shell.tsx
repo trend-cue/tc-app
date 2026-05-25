@@ -3,14 +3,17 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Post, Project, QueryData } from "@/lib/types";
+import { Post, Project, PROJECT_COLORS, QueryData, OrganizationContext } from "@/lib/types";
 import { fetchPosts, derivedClusters } from "@/lib/posts-db";
 import { EXPLORE_TOPICS } from "@/lib/explore-topics";
+import { sortPostsForIndustries, suggestedQueryForIndustries } from "@/lib/industries";
+import { loadOrganizationContext, saveMemberPreferences } from "@/lib/organization";
 import { IconTrend, IconAlert, IconLogout } from "./icons";
 import { SearchBar } from "./search-bar";
 import { DiscoverView } from "./discover-view";
 import { ProjectsView } from "./projects-view";
 import { ProjectPicker } from "./project-picker";
+import { ProfileView } from "./profile-view";
 
 const DEFAULT_ACCENT = "oklch(0.72 0.18 210)";
 
@@ -58,6 +61,8 @@ function Header({
   userEmail,
   onLogout,
   onHome,
+  onProfile,
+  profileActive,
 }: {
   tab: string;
   setTab: (t: string) => void;
@@ -66,6 +71,8 @@ function Header({
   userEmail: string;
   onLogout: () => void;
   onHome: () => void;
+  onProfile: () => void;
+  profileActive: boolean;
 }) {
   const initials = userEmail
     .split("@")[0]
@@ -165,22 +172,27 @@ function Header({
         ))}
       </nav>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div
+        <button
+          type="button"
+          onClick={onProfile}
+          title="Open profile"
           style={{
             width: 28,
             height: 28,
             borderRadius: "50%",
-            background: "#1a1a28",
-            border: "1px solid #252535",
+            background: profileActive ? accent + "22" : "#1a1a28",
+            border: `1px solid ${profileActive ? accent + "66" : "#252535"}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            cursor: "pointer",
+            fontFamily: "Space Grotesk, sans-serif",
           }}
         >
           <span style={{ fontSize: 11, fontWeight: 700, color: "#8080a8" }}>
             {initials}
           </span>
-        </div>
+        </button>
         <button
           onClick={onLogout}
           title="Sign out"
@@ -271,7 +283,7 @@ function AlertsView({ accent }: { accent: string }) {
 
 export function AppShell() {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const accent = DEFAULT_ACCENT;
 
   const [tab, setTab] = useState("discover");
@@ -285,6 +297,11 @@ export function AppShell() {
     y: number;
   } | null>(null);
   const [userEmail, setUserEmail] = useState("");
+  const [userId, setUserId] = useState("");
+  const [organizationContext, setOrganizationContext] =
+    useState<OrganizationContext | null>(null);
+  const [organizationLoading, setOrganizationLoading] = useState(true);
+  const [organizationError, setOrganizationError] = useState("");
   const [dbReady, setDbReady] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
 
@@ -297,15 +314,48 @@ export function AppShell() {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         setUserEmail(data.user.email || "");
+        setUserId(data.user.id);
       }
     });
   }, [supabase.auth]);
 
+  const refreshOrganizationContext = useCallback(async () => {
+    setOrganizationLoading(true);
+    setOrganizationError("");
+    try {
+      setOrganizationContext(await loadOrganizationContext(supabase));
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not load organisation";
+      console.warn("Organization context not ready:", message);
+      setOrganizationError(message);
+      setOrganizationContext(null);
+    } finally {
+      setOrganizationLoading(false);
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    refreshOrganizationContext();
+  }, [refreshOrganizationContext]);
+
+  useEffect(() => {
+    if (!organizationLoading && !organizationContext && userEmail) {
+      setTab("profile");
+    }
+  }, [organizationContext, organizationLoading, userEmail]);
+
   // Load projects from Supabase
   const loadProjects = useCallback(async () => {
+    if (!organizationContext) {
+      setProjects([]);
+      return;
+    }
+
     const { data: projectRows, error } = await supabase
       .from("projects")
       .select("*")
+      .eq("organization_id", organizationContext.organization.id)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -332,6 +382,9 @@ export function AppShell() {
     setProjects(
       (projectRows || []).map((p: { id: string; name: string; color: string; created_at: string; updated_at: string }) => ({
         id: p.id,
+        organization_id: (p as Project).organization_id,
+        created_by: (p as Project).created_by,
+        user_id: (p as Project).user_id,
         name: p.name,
         color: p.color,
         postIds: postsByProject[p.id] || [],
@@ -339,11 +392,16 @@ export function AppShell() {
         updated_at: p.updated_at,
       }))
     );
-  }, [supabase]);
+  }, [organizationContext, supabase]);
 
   useEffect(() => {
     loadProjects();
   }, [loadProjects]);
+
+  const preferredIndustryKeys = useMemo(
+    () => organizationContext?.preferences.industry_keys ?? [],
+    [organizationContext?.preferences.industry_keys]
+  );
 
   const allPosts = posts;
 
@@ -363,9 +421,16 @@ export function AppShell() {
       .map(([tag]) => tag);
 
     return Array.from(
-      new Set([...topicLabels, ...clusterNames, ...hashtags])
+      new Set([
+        ...(preferredIndustryKeys.length
+          ? [suggestedQueryForIndustries(preferredIndustryKeys)]
+          : []),
+        ...topicLabels,
+        ...clusterNames,
+        ...hashtags,
+      ])
     ).slice(0, 8);
-  }, [posts]);
+  }, [posts, preferredIndustryKeys]);
 
   const isPostSaved = (postId: string) =>
     projects.some((p) => p.postIds.includes(postId));
@@ -377,8 +442,7 @@ export function AppShell() {
 
   const togglePostInProject = async (projectId: string, postId: string) => {
     const proj = projects.find((p) => p.id === projectId);
-    if (!proj) return;
-    const has = proj.postIds.includes(postId);
+    const has = proj?.postIds.includes(postId) ?? false;
 
     if (dbReady) {
       if (has) {
@@ -390,7 +454,10 @@ export function AppShell() {
       } else {
         await supabase
           .from("project_posts")
-          .insert({ project_id: projectId, post_id: postId });
+          .upsert(
+            { project_id: projectId, post_id: postId },
+            { onConflict: "project_id,post_id" }
+          );
       }
       await supabase
         .from("projects")
@@ -413,36 +480,46 @@ export function AppShell() {
     );
   };
 
-  const createProject = (name: string, color: string): string => {
-    const tempId = "proj_" + Date.now();
-
-    if (dbReady) {
-      supabase.auth.getUser().then(async ({ data }) => {
-        if (!data.user) return;
-        const { data: inserted } = await supabase
-          .from("projects")
-          .insert({ name, color, user_id: data.user.id })
-          .select()
-          .single();
-
-        if (inserted) {
-          setProjects((prev) =>
-            prev.map((p) =>
-              p.id === tempId
-                ? { ...p, id: inserted.id, created_at: inserted.created_at, updated_at: inserted.updated_at }
-                : p
-            )
-          );
-        }
-      });
-    }
-
+  const createProject = async (name: string, color: string): Promise<string> => {
+    const id = crypto.randomUUID();
     const now = new Date().toISOString();
+
     setProjects((prev) => [
-      { id: tempId, name, color, postIds: [], created_at: now, updated_at: now },
+      {
+        id,
+        organization_id: organizationContext?.organization.id,
+        created_by: userId,
+        user_id: userId,
+        name,
+        color,
+        postIds: [],
+        created_at: now,
+        updated_at: now,
+      },
       ...prev,
     ]);
-    return tempId;
+
+    if (dbReady) {
+      if (!organizationContext || !userId) {
+        throw new Error("Create an organisation before creating projects.");
+      }
+
+      const { error } = await supabase.from("projects").insert({
+        id,
+        name,
+        color,
+        user_id: userId,
+        created_by: userId,
+        organization_id: organizationContext.organization.id,
+      });
+
+      if (error) {
+        setProjects((prev) => prev.filter((project) => project.id !== id));
+        throw error;
+      }
+    }
+
+    return id;
   };
 
   const deleteProject = async (id: string) => {
@@ -468,7 +545,10 @@ export function AppShell() {
     setQueryData(null);
     setQuery(q);
     const startedAt = performance.now();
-    const matching = searchPosts(posts, q);
+    const matching = sortPostsForIndustries(
+      searchPosts(posts, q),
+      preferredIndustryKeys
+    );
     const delay = Math.max(
       180,
       420 - Math.round(performance.now() - startedAt)
@@ -502,7 +582,10 @@ export function AppShell() {
   const handleTopicOpen = (topicId: string) => {
     const topic = EXPLORE_TOPICS.find((t) => t.id === topicId);
     if (!topic) return;
-    const matching = posts.filter(topic.match);
+    const matching = sortPostsForIndustries(
+      posts.filter(topic.match),
+      preferredIndustryKeys
+    );
     if (matching.length === 0) return;
     setTab("discover");
     setQuery(topic.label);
@@ -513,6 +596,59 @@ export function AppShell() {
       posts: matching,
       clusters: derivedClusters(matching),
     });
+  };
+
+  const saveFirstTrend = async (postId: string) => {
+    if (!organizationContext || !userId) {
+      throw new Error("Create an organisation before saving trends.");
+    }
+
+    const projectId =
+      projects[0]?.id ?? (await createProject("First trends", PROJECT_COLORS[0]));
+
+    const alreadySaved = projects.some(
+      (project) => project.id === projectId && project.postIds.includes(postId)
+    );
+
+    if (!alreadySaved) {
+      if (dbReady) {
+        const { error } = await supabase
+          .from("project_posts")
+          .upsert(
+            { project_id: projectId, post_id: postId },
+            { onConflict: "project_id,post_id" }
+          );
+        if (error) throw error;
+
+        await supabase
+          .from("projects")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", projectId);
+      }
+
+      setProjects((prev) =>
+        prev.map((project) =>
+          project.id === projectId
+            ? {
+                ...project,
+                postIds: project.postIds.includes(postId)
+                  ? project.postIds
+                  : [...project.postIds, postId],
+                updated_at: new Date().toISOString(),
+              }
+            : project
+        )
+      );
+    }
+
+    await saveMemberPreferences(supabase, {
+      ...organizationContext.preferences,
+      onboarding_step: "complete",
+      first_saved_post_id: postId,
+      first_saved_project_id: projectId,
+      onboarding_completed_at: new Date().toISOString(),
+    });
+    await refreshOrganizationContext();
   };
 
   const handleHome = () => {
@@ -546,6 +682,8 @@ export function AppShell() {
         userEmail={userEmail}
         onLogout={handleLogout}
         onHome={handleHome}
+        onProfile={() => setTab("profile")}
+        profileActive={tab === "profile"}
       />
 
       {tab === "discover" && (
@@ -595,6 +733,7 @@ export function AppShell() {
             loading={loading}
             accent={accent}
             density="spacious"
+            preferredIndustryKeys={preferredIndustryKeys}
             onClusterOpen={handleClusterOpen}
             onTopicOpen={handleTopicOpen}
             isPostSaved={isPostSaved}
@@ -616,6 +755,21 @@ export function AppShell() {
       )}
 
       {tab === "alerts" && <AlertsView accent={accent} />}
+
+      {tab === "profile" && (
+        <ProfileView
+          context={organizationContext}
+          loading={organizationLoading}
+          error={organizationError}
+          userEmail={userEmail}
+          posts={posts}
+          projects={projects}
+          accent={accent}
+          onRefresh={refreshOrganizationContext}
+          onRunSearch={handleSearch}
+          onSaveFirstTrend={saveFirstTrend}
+        />
+      )}
 
       {pickerState && (
         <ProjectPicker

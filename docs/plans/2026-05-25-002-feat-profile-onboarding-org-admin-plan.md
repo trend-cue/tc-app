@@ -1,7 +1,7 @@
 ---
 title: feat: Add Profile Onboarding and Organisation Admin
 type: feat
-status: active
+status: completed
 date: 2026-05-25
 ---
 
@@ -490,42 +490,42 @@ All access paths need the same permissions:
 
 ### Functional Requirements
 
-- [ ] Clicking the dashboard avatar opens a full profile/settings view.
-- [ ] New sign-up collects organisation name and creates an organisation with the signing user as `admin`.
-- [ ] Invited users can join an existing organisation without creating a new organisation.
-- [ ] Active members can start, resume, and complete onboarding.
-- [ ] Onboarding guides users to choose industries, run a first search, and save a first trend.
-- [ ] Industry preferences persist per user per organisation.
-- [ ] Discover surfaces preferred-industry content ahead of generic content while preserving fallback content.
-- [ ] Admins can choose one of three mock subscription tiers.
-- [ ] Choosing a paid tier requires entering a mock payment method.
-- [ ] Mock payment method persistence stores only safe display metadata, not full card number or CVC.
-- [ ] Admins can view billing history.
-- [ ] Admins can download previous invoice documents.
-- [ ] Admins can invite team members by email and assign `admin` or `member`.
-- [ ] Admins can revoke pending invitations.
-- [ ] Admins can remove team members.
-- [ ] Removed members immediately lose access to organisation projects, saved trend data, billing, and team settings.
-- [ ] The last active admin cannot be removed or demoted.
+- [x] Clicking the dashboard avatar opens a full profile/settings view.
+- [x] New sign-up collects organisation name and creates an organisation with the signing user as `admin`.
+- [x] Invited users can join an existing organisation without creating a new organisation.
+- [x] Active members can start, resume, and complete onboarding.
+- [x] Onboarding guides users to choose industries, run a first search, and save a first trend.
+- [x] Industry preferences persist per user per organisation.
+- [x] Discover surfaces preferred-industry content ahead of generic content while preserving fallback content.
+- [x] Admins can choose one of three mock subscription tiers.
+- [x] Choosing a paid tier requires entering a mock payment method.
+- [x] Mock payment method persistence stores only safe display metadata, not full card number or CVC.
+- [x] Admins can view billing history.
+- [x] Admins can download previous invoice documents.
+- [x] Admins can invite team members by email and assign `admin` or `member`.
+- [x] Admins can revoke pending invitations.
+- [x] Admins can remove team members.
+- [x] Removed members immediately lose access to organisation projects, saved trend data, billing, and team settings.
+- [x] The last active admin cannot be removed or demoted.
 
 ### Non-Functional Requirements
 
-- [ ] RLS is enabled on every new table in the public schema.
-- [ ] Admin-only data is protected by database policies, not only hidden in UI.
-- [ ] RLS policies use `to authenticated` and avoid deprecated `auth.role()` / `auth.email()` helpers.
-- [ ] Invitation tokens are stored hashed.
-- [ ] Existing saved project references survive the migration.
-- [ ] Profile, onboarding, billing, and team controls are usable on desktop and mobile dashboard widths.
-- [ ] UI controls use the existing TrendCue visual language and avoid nested settings cards.
+- [x] RLS is enabled on every new table in the public schema.
+- [x] Admin-only data is protected by database policies, not only hidden in UI.
+- [x] RLS policies use `to authenticated` and avoid deprecated `auth.role()` / `auth.email()` helpers.
+- [x] Invitation tokens are stored hashed.
+- [x] Existing saved project references survive the migration.
+- [x] Profile, onboarding, billing, and team controls are usable on desktop and mobile dashboard widths.
+- [x] UI controls use the existing TrendCue visual language and avoid nested settings cards.
 
 ### Quality Gates
 
-- [ ] `pnpm run build` passes.
-- [ ] TypeScript passes with the new Supabase row types.
-- [ ] Manual RLS smoke test verifies member cannot read billing/payment/invitation rows.
-- [ ] Manual RLS smoke test verifies removed member cannot read organisation projects.
-- [ ] Migration validation confirms project count and project-post count before/after backfill.
-- [ ] Invoice download route returns 403 for non-admins.
+- [x] `pnpm run build` passes.
+- [x] TypeScript passes with the new Supabase row types.
+- [x] Manual RLS smoke test verifies member cannot read billing/payment/invitation rows.
+- [x] Manual RLS smoke test verifies removed member cannot read organisation projects.
+- [x] Migration validation confirms project count and project-post count before/after backfill.
+- [x] Invoice download route returns 403 for non-admins.
 
 ## Files
 
