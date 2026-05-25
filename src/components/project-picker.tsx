@@ -63,6 +63,7 @@ export function ProjectPicker({
   return (
     <div
       ref={ref}
+      onClick={(e) => e.stopPropagation()}
       style={{
         position: "fixed",
         left,

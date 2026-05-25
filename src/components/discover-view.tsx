@@ -396,6 +396,8 @@ function GeneralDiscovery({
         <DetailPanel
           post={selectedPost}
           onClose={() => setSelectedPost(null)}
+          onSave={openPicker}
+          saved={isPostSaved(selectedPost.id)}
           accent={accent}
         />
       )}
@@ -643,6 +645,8 @@ export function DiscoverView({
         <DetailPanel
           post={selectedPost}
           onClose={() => setSelectedPost(null)}
+          onSave={openPicker}
+          saved={isPostSaved(selectedPost.id)}
           accent={accent}
         />
       )}

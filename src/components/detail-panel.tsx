@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Post, PLATFORM_META, formatNumber } from "@/lib/types";
-import { PlatformIcon, IconSparkle, IconClose } from "./icons";
+import { PlatformIcon, IconSparkle, IconClose, IconBookmark } from "./icons";
 import { Thumb } from "./trend-bar";
 
 function tiktokVideoId(post: Post): string | null {
@@ -55,10 +55,14 @@ function TikTokPlayer({ post }: { post: Post }) {
 export function DetailPanel({
   post,
   onClose,
+  onSave,
+  saved,
   accent,
 }: {
   post: Post;
   onClose: () => void;
+  onSave: (postId: string, e: React.MouseEvent<HTMLButtonElement>) => void;
+  saved: boolean;
   accent: string;
 }) {
   const pm = PLATFORM_META[post.platform] || PLATFORM_META.twitter;
@@ -129,33 +133,72 @@ export function DetailPanel({
               WHY TRENDING
             </span>
           </div>
-          <button
-            onClick={onClose}
-            aria-label="Dismiss"
-            style={{
-              background: "#161624",
-              border: "1px solid #252535",
-              cursor: "pointer",
-              color: "#a0a0c0",
-              borderRadius: 8,
-              width: 30,
-              height: 30,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.15s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#1e1e2e";
-              e.currentTarget.style.color = "#e0e0f0";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "#161624";
-              e.currentTarget.style.color = "#a0a0c0";
-            }}
-          >
-            <IconClose />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              type="button"
+              onClick={(e) => onSave(post.id, e)}
+              aria-pressed={saved}
+              title={saved ? "Manage saved projects" : "Save to project"}
+              style={{
+                height: 30,
+                padding: "0 12px",
+                background: saved ? accent : accent + "18",
+                border: `1px solid ${saved ? accent : accent + "40"}`,
+                cursor: "pointer",
+                color: saved ? "#07070c" : accent,
+                borderRadius: 8,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 7,
+                fontSize: 12,
+                fontWeight: 700,
+                fontFamily: "Space Grotesk, sans-serif",
+                transition: "all 0.15s",
+                boxShadow: saved ? `0 0 16px ${accent}30` : "none",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-1px)";
+                e.currentTarget.style.boxShadow = `0 6px 18px ${accent}22`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = saved
+                  ? `0 0 16px ${accent}30`
+                  : "none";
+              }}
+            >
+              <IconBookmark filled={saved} />
+              <span>{saved ? "Saved" : "Save"}</span>
+            </button>
+            <button
+              onClick={onClose}
+              aria-label="Dismiss"
+              style={{
+                background: "#161624",
+                border: "1px solid #252535",
+                cursor: "pointer",
+                color: "#a0a0c0",
+                borderRadius: 8,
+                width: 30,
+                height: 30,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#1e1e2e";
+                e.currentTarget.style.color = "#e0e0f0";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#161624";
+                e.currentTarget.style.color = "#a0a0c0";
+              }}
+            >
+              <IconClose />
+            </button>
+          </div>
         </div>
 
         {/* Body: video left, details right */}
