@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+/* eslint-disable @next/next/no-page-custom-font */
+
 export const metadata: Metadata = {
   title: "TrendCue",
   description: "Semantic trend discovery for marketing professionals",

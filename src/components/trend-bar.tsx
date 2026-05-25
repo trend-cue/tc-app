@@ -1,5 +1,9 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
+import { useEffect, useState } from "react";
+
 export function TrendBar({
   score,
   color = "oklch(0.68 0.22 285)",
@@ -51,14 +55,20 @@ export function Thumb({
   data: { label: string; accent: string; url?: string };
   isVideo: boolean;
 }) {
-  const hasImage = !!data.url;
+  const [failed, setFailed] = useState(false);
+  const hasImage = !!data.url && !failed;
+
+  useEffect(() => {
+    setFailed(false);
+  }, [data.url]);
+
   return (
     <div
       style={{
         width: "100%",
         aspectRatio: isVideo ? "9/16" : "4/5",
         background: hasImage
-          ? `#000 center/cover no-repeat url(${JSON.stringify(data.url)})`
+          ? "#000"
           : "repeating-linear-gradient(45deg, #13131c 0px, #13131c 4px, #1a1a28 4px, #1a1a28 12px)",
         borderRadius: 8,
         display: "flex",
@@ -70,6 +80,21 @@ export function Thumb({
         overflow: "hidden",
       }}
     >
+      {hasImage && (
+        <img
+          src={data.url}
+          alt={data.label}
+          loading="lazy"
+          onError={() => setFailed(true)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      )}
       <div
         style={{
           width: 32,
@@ -81,6 +106,8 @@ export function Thumb({
           alignItems: "center",
           justifyContent: "center",
           backdropFilter: hasImage ? "blur(4px)" : undefined,
+          position: "relative",
+          zIndex: 1,
         }}
       >
         {isVideo && (
@@ -115,6 +142,8 @@ export function Thumb({
             textAlign: "center",
             padding: "0 12px",
             lineHeight: 1.4,
+            position: "relative",
+            zIndex: 1,
           }}
         >
           {data.label}

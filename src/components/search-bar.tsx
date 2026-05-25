@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { IconSearch } from "./icons";
-import { SUGGESTIONS } from "@/lib/mock-data";
 
 export function SearchBar({
   query,
@@ -10,21 +9,23 @@ export function SearchBar({
   onSearch,
   loading,
   accent,
+  suggestions,
 }: {
   query: string;
   setQuery: (q: string) => void;
   onSearch: (q: string) => void;
   loading: boolean;
   accent: string;
+  suggestions: string[];
 }) {
   const [focused, setFocused] = useState(false);
   const [showSugg, setShowSugg] = useState(false);
 
   const filtered = query
-    ? SUGGESTIONS.filter(
+    ? suggestions.filter(
         (s) => s.toLowerCase().includes(query.toLowerCase()) && s !== query
       )
-    : SUGGESTIONS;
+    : suggestions;
 
   const doSearch = (q: string) => {
     setQuery(q);
@@ -82,7 +83,7 @@ export function SearchBar({
           onKeyDown={(e) =>
             e.key === "Enter" && query.trim() && doSearch(query)
           }
-          placeholder='Describe what you&apos;re looking for... e.g. "sustainable fashion trends summer 2026"'
+          placeholder='Describe what you&apos;re looking for... e.g. "volleyball plays"'
           style={{
             flex: 1,
             background: "none",

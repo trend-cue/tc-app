@@ -5,13 +5,16 @@ import { CLUSTER_DIRECTORY, clusterById } from "./clusters";
 interface PostRow {
   id: string;
   platform: "tiktok" | "instagram" | "twitter";
+  external_id: string | null;
   source_url: string;
+  embed_url: string | null;
   handle: string;
   display_name: string | null;
   content: string | null;
   hashtags: string[] | null;
   is_video: boolean;
   thumbnail_url: string | null;
+  thumbnail_storage_path: string | null;
   thumbnail_label: string | null;
   thumbnail_accent: string | null;
   likes: number;
@@ -56,6 +59,9 @@ export function rowToPost(r: PostRow): Post {
     isVideo: r.is_video,
     hashtags: r.hashtags ?? [],
     sourceUrl: r.source_url,
+    externalId: r.external_id ?? undefined,
+    embedUrl: r.embed_url ?? undefined,
+    thumbnailStoragePath: r.thumbnail_storage_path ?? undefined,
     thumbnail: {
       label: r.thumbnail_label ?? cluster?.name ?? "Post",
       accent: r.thumbnail_accent ?? cluster?.accent ?? "#7c6af7",
@@ -72,7 +78,30 @@ export function rowToPost(r: PostRow): Post {
 export async function fetchPosts(supabase: SupabaseClient): Promise<Post[]> {
   const { data, error } = await supabase
     .from("posts")
-    .select("*")
+    .select(`
+      id,
+      platform,
+      external_id,
+      source_url,
+      embed_url,
+      handle,
+      display_name,
+      content,
+      hashtags,
+      is_video,
+      thumbnail_url,
+      thumbnail_storage_path,
+      thumbnail_label,
+      thumbnail_accent,
+      likes,
+      comments,
+      shares,
+      views,
+      posted_at,
+      cluster_id,
+      trend_score,
+      why_trending
+    `)
     .order("trend_score", { ascending: false });
   if (error) {
     console.warn("Failed to load posts from Supabase:", error.message);

@@ -14,6 +14,9 @@ export interface Post {
   isVideo: boolean;
   hashtags: string[];
   sourceUrl?: string;
+  externalId?: string;
+  embedUrl?: string;
+  thumbnailStoragePath?: string;
   thumbnail: { label: string; accent: string; url?: string };
   whyTrending: {
     summary: string;

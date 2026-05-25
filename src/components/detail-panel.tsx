@@ -5,6 +5,53 @@ import { Post, PLATFORM_META, formatNumber } from "@/lib/types";
 import { PlatformIcon, IconSparkle, IconClose } from "./icons";
 import { Thumb } from "./trend-bar";
 
+function tiktokVideoId(post: Post): string | null {
+  if (post.externalId) return post.externalId;
+  if (post.id.startsWith("tiktok:")) return post.id.slice("tiktok:".length);
+  return post.sourceUrl?.match(/\/video\/(\d+)/)?.[1] ?? null;
+}
+
+function tiktokPlayerUrl(post: Post): string | null {
+  if (post.embedUrl) return post.embedUrl;
+  const videoId = tiktokVideoId(post);
+  if (!videoId) return null;
+  const url = new URL(`https://www.tiktok.com/player/v1/${videoId}`);
+  url.searchParams.set("controls", "1");
+  url.searchParams.set("description", "0");
+  url.searchParams.set("music_info", "0");
+  return url.toString();
+}
+
+function TikTokPlayer({ post }: { post: Post }) {
+  const src = tiktokPlayerUrl(post);
+  if (!src) return <Thumb data={post.thumbnail} isVideo={post.isVideo} />;
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        aspectRatio: "9/16",
+        borderRadius: 8,
+        overflow: "hidden",
+        background: "#000",
+      }}
+    >
+      <iframe
+        src={src}
+        title={post.thumbnail.label}
+        loading="lazy"
+        allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
+        style={{
+          width: "100%",
+          height: "100%",
+          border: "none",
+          display: "block",
+        }}
+      />
+    </div>
+  );
+}
+
 export function DetailPanel({
   post,
   onClose,
@@ -174,7 +221,11 @@ export function DetailPanel({
                 </div>
               </div>
             </div>
-            <Thumb data={post.thumbnail} isVideo={post.isVideo} />
+            {post.platform === "tiktok" && post.isVideo ? (
+              <TikTokPlayer post={post} />
+            ) : (
+              <Thumb data={post.thumbnail} isVideo={post.isVideo} />
+            )}
           </div>
 
           {/* Details */}

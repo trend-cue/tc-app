@@ -15,7 +15,7 @@
 
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 const execFileP = promisify(execFile);
 
@@ -71,19 +71,25 @@ const SIGNAL_TEMPLATES = [
 ];
 
 const HASHTAG_GROWTHS = ["+98%", "+140%", "+165%", "+210%", "+290%", "+340%"];
+const THUMBNAIL_BUCKET = "post-thumbnails";
+const TIKTOK_OEMBED_ENDPOINT = "https://www.tiktok.com/oembed";
 
 type Raw = Record<string, unknown>;
 
 interface PostRow {
   id: string;
   platform: "tiktok" | "instagram" | "twitter";
+  external_id: string | null;
   source_url: string;
+  embed_url: string | null;
   handle: string;
   display_name: string | null;
   content: string | null;
   hashtags: string[];
   is_video: boolean;
   thumbnail_url: string | null;
+  thumbnail_storage_path: string | null;
+  thumbnail_refreshed_at: string | null;
   thumbnail_label: string | null;
   thumbnail_accent: string | null;
   likes: number;
@@ -94,6 +100,7 @@ interface PostRow {
   cluster_id: string | null;
   trend_score: number | null;
   why_trending: unknown;
+  oembed: Raw | null;
   raw: Raw;
 }
 
@@ -131,6 +138,18 @@ function str(v: unknown): string | null {
   return typeof v === "string" && v.length > 0 ? v : null;
 }
 
+function videoIdFromUrl(url: string): string | null {
+  return url.match(/\/video\/(\d+)/)?.[1] ?? null;
+}
+
+function tiktokEmbedUrl(videoId: string): string {
+  const url = new URL(`https://www.tiktok.com/player/v1/${videoId}`);
+  url.searchParams.set("controls", "1");
+  url.searchParams.set("description", "0");
+  url.searchParams.set("music_info", "0");
+  return url.toString();
+}
+
 function extractHashtags(caption: string): string[] {
   const tags = Array.from(caption.matchAll(/#([\p{L}0-9_]+)/gu)).map((m) => `#${m[1].toLowerCase()}`);
   return Array.from(new Set(tags));
@@ -166,8 +185,93 @@ function fakeWhyTrending(seed: number, hashtags: string[]) {
   };
 }
 
+async function fetchOembed(sourceUrl: string): Promise<Raw | null> {
+  const url = new URL(TIKTOK_OEMBED_ENDPOINT);
+  url.searchParams.set("url", sourceUrl);
+
+  const res = await fetch(url, {
+    headers: {
+      "accept": "application/json",
+      "user-agent": "Mozilla/5.0",
+    },
+  });
+
+  if (!res.ok) {
+    console.warn(`oEmbed failed (${res.status}) for ${sourceUrl}`);
+    return null;
+  }
+
+  return (await res.json()) as Raw;
+}
+
+function cleanImageMime(contentType: string | null): string {
+  const mime = contentType?.split(";")[0]?.trim().toLowerCase();
+  if (mime === "image/jpg") return "image/jpeg";
+  if (mime && ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(mime)) {
+    return mime;
+  }
+  return "image/jpeg";
+}
+
+function extForMime(mime: string): string {
+  switch (mime) {
+    case "image/png":
+      return "png";
+    case "image/webp":
+      return "webp";
+    case "image/gif":
+      return "gif";
+    default:
+      return "jpg";
+  }
+}
+
+async function cacheThumbnail(
+  supabase: SupabaseClient,
+  externalId: string,
+  oembed: Raw | null
+): Promise<{ url: string; path: string; refreshedAt: string } | null> {
+  const thumbnailUrl = str(oembed?.thumbnail_url);
+  if (!thumbnailUrl) return null;
+
+  const res = await fetch(thumbnailUrl, {
+    headers: {
+      "accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+      "user-agent": "Mozilla/5.0",
+    },
+  });
+
+  if (!res.ok) {
+    console.warn(`Thumbnail fetch failed (${res.status}) for ${externalId}`);
+    return null;
+  }
+
+  const contentType = cleanImageMime(res.headers.get("content-type"));
+  const path = `tiktok/${externalId}.${extForMime(contentType)}`;
+  const bytes = Buffer.from(await res.arrayBuffer());
+
+  const { error } = await supabase.storage
+    .from(THUMBNAIL_BUCKET)
+    .upload(path, bytes, {
+      cacheControl: "31536000",
+      contentType,
+      upsert: true,
+    });
+
+  if (error) {
+    console.warn(`Thumbnail upload failed for ${externalId}: ${error.message}`);
+    return null;
+  }
+
+  const { data } = supabase.storage.from(THUMBNAIL_BUCKET).getPublicUrl(path);
+  return { url: data.publicUrl, path, refreshedAt: new Date().toISOString() };
+}
+
 function normalize(raw: Raw, sourceUrl: string): PostRow {
-  const id = `tiktok:${str(raw.id) ?? ""}`;
+  const externalId = str(raw.id) ?? videoIdFromUrl(sourceUrl);
+  if (!externalId) throw new Error(`Could not determine TikTok video id for ${sourceUrl}`);
+
+  const id = `tiktok:${externalId}`;
   const caption = str(raw.description) ?? str(raw.title) ?? "";
   const hashtags = extractHashtags(caption);
   const uploader = str(raw.uploader) ?? str(raw.uploader_id) ?? "";
@@ -178,13 +282,17 @@ function normalize(raw: Raw, sourceUrl: string): PostRow {
   return {
     id,
     platform: "tiktok",
+    external_id: externalId,
     source_url: str(raw.webpage_url) ?? sourceUrl,
+    embed_url: tiktokEmbedUrl(externalId),
     handle: uploader ? `@${uploader}` : "",
     display_name: str(raw.creator) ?? str(raw.channel) ?? uploader,
     content: caption || null,
     hashtags,
     is_video: true,
-    thumbnail_url: str(raw.thumbnail),
+    thumbnail_url: null,
+    thumbnail_storage_path: null,
+    thumbnail_refreshed_at: null,
     thumbnail_label: caption ? `Video: ${caption.slice(0, 60)}` : "TikTok video",
     thumbnail_accent: cluster.accent,
     likes: num(raw.like_count) ?? 0,
@@ -195,6 +303,7 @@ function normalize(raw: Raw, sourceUrl: string): PostRow {
     cluster_id: cluster.id,
     trend_score: 65 + (Math.abs(seed) % 31),
     why_trending: fakeWhyTrending(seed, hashtags),
+    oembed: null,
     raw,
   };
 }
@@ -222,8 +331,24 @@ async function main() {
     try {
       const raw = await ytdlp(url);
       const row = normalize(raw, url);
+      const oembed = await fetchOembed(row.source_url);
+      row.oembed = oembed;
+
+      if (supabase) {
+        const cached = await cacheThumbnail(supabase, row.external_id!, oembed);
+        if (cached) {
+          row.thumbnail_url = cached.url;
+          row.thumbnail_storage_path = cached.path;
+          row.thumbnail_refreshed_at = cached.refreshedAt;
+        }
+      }
+
       rows.push(row);
-      console.log(`ok (${row.likes} likes, ${row.views ?? "?"} views)`);
+      console.log(
+        `ok (${row.likes} likes, ${row.views ?? "?"} views, ${
+          row.thumbnail_storage_path ? "thumbnail cached" : "thumbnail fallback"
+        })`
+      );
     } catch (err) {
       failed++;
       console.log(`FAILED: ${(err as Error).message.split("\n")[0]}`);

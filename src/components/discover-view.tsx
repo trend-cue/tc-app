@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { QueryData, Post } from "@/lib/types";
 import { derivedClusters } from "@/lib/posts-db";
 import { topicsWithMatches } from "@/lib/explore-topics";
-import { IconSearch } from "./icons";
 import { PostCard } from "./post-card";
 import { ClusterPill } from "./cluster-pill";
 import { DetailPanel } from "./detail-panel";
@@ -12,19 +11,15 @@ import { FilterBar } from "./filter-bar";
 
 function GeneralDiscovery({
   posts,
-  onSearch,
   onClusterOpen,
   onTopicOpen,
-  setQuery,
   accent,
   isPostSaved,
   openPicker,
 }: {
   posts: Post[];
-  onSearch: (q: string) => void;
   onClusterOpen: (clusterId: string) => void;
   onTopicOpen: (topicId: string) => void;
-  setQuery: (q: string) => void;
   accent: string;
   isPostSaved: (id: string) => boolean;
   openPicker: (postId: string, e: React.MouseEvent) => void;
@@ -395,10 +390,8 @@ export function DiscoverView({
   loading,
   accent,
   density,
-  onSearch,
   onClusterOpen,
   onTopicOpen,
-  setQuery,
   isPostSaved,
   openPicker,
 }: {
@@ -407,10 +400,8 @@ export function DiscoverView({
   loading: boolean;
   accent: string;
   density: string;
-  onSearch: (q: string) => void;
   onClusterOpen: (clusterId: string) => void;
   onTopicOpen: (topicId: string) => void;
-  setQuery: (q: string) => void;
   isPostSaved: (id: string) => boolean;
   openPicker: (postId: string, e: React.MouseEvent) => void;
 }) {
@@ -486,15 +477,13 @@ export function DiscoverView({
 
   if (!queryData)
     return (
-      <GeneralDiscovery
-        posts={posts}
-        onSearch={onSearch}
-        onClusterOpen={onClusterOpen}
-        onTopicOpen={onTopicOpen}
-        setQuery={setQuery}
-        accent={accent}
-        isPostSaved={isPostSaved}
-        openPicker={openPicker}
+        <GeneralDiscovery
+          posts={posts}
+          onClusterOpen={onClusterOpen}
+          onTopicOpen={onTopicOpen}
+          accent={accent}
+          isPostSaved={isPostSaved}
+          openPicker={openPicker}
       />
     );
 

@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Post, Project, QueryData } from "@/lib/types";
-import { getQueryData } from "@/lib/mock-data";
 import { fetchPosts, derivedClusters } from "@/lib/posts-db";
 import { EXPLORE_TOPICS } from "@/lib/explore-topics";
 import { IconTrend, IconAlert, IconLogout } from "./icons";
@@ -14,6 +13,42 @@ import { ProjectsView } from "./projects-view";
 import { ProjectPicker } from "./project-picker";
 
 const DEFAULT_ACCENT = "oklch(0.72 0.18 210)";
+
+function searchPosts(posts: Post[], query: string): Post[] {
+  const tokens = query
+    .toLowerCase()
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+  if (tokens.length === 0) return [];
+
+  const clustersById = new Map(derivedClusters(posts).map((c) => [c.id, c]));
+
+  return posts
+    .map((post) => {
+      const cluster = clustersById.get(post.clusterId);
+      const corpus = [
+        post.content,
+        post.handle,
+        post.displayName,
+        cluster?.name,
+        ...post.hashtags,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      const matched = tokens.filter((token) => corpus.includes(token)).length;
+      return { post, matched };
+    })
+    .filter(({ matched }) => matched > 0)
+    .sort(
+      (a, b) =>
+        b.matched - a.matched ||
+        b.post.trendScore - a.post.trendScore ||
+        b.post.likes + b.post.shares - (a.post.likes + a.post.shares)
+    )
+    .map(({ post }) => post);
+}
 
 function Header({
   tab,
@@ -312,6 +347,26 @@ export function AppShell() {
 
   const allPosts = posts;
 
+  const searchSuggestions = useMemo(() => {
+    const topicLabels = EXPLORE_TOPICS.filter((topic) =>
+      posts.some(topic.match)
+    ).map((topic) => topic.label);
+    const clusterNames = derivedClusters(posts).map((cluster) => cluster.name);
+    const hashtagCounts = posts
+      .flatMap((post) => post.hashtags)
+      .reduce((acc: Record<string, number>, tag) => {
+        acc[tag] = (acc[tag] || 0) + 1;
+        return acc;
+      }, {});
+    const hashtags = Object.entries(hashtagCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([tag]) => tag);
+
+    return Array.from(
+      new Set([...topicLabels, ...clusterNames, ...hashtags])
+    ).slice(0, 8);
+  }, [posts]);
+
   const isPostSaved = (postId: string) =>
     projects.some((p) => p.postIds.includes(postId));
 
@@ -412,14 +467,21 @@ export function AppShell() {
     setLoading(true);
     setQueryData(null);
     setQuery(q);
-    const data = getQueryData(q);
-    setTimeout(
-      () => {
-        setQueryData(data);
-        setLoading(false);
-      },
-      data?.analysisTime || 1200
+    const startedAt = performance.now();
+    const matching = searchPosts(posts, q);
+    const delay = Math.max(
+      180,
+      420 - Math.round(performance.now() - startedAt)
     );
+    setTimeout(() => {
+      setQueryData({
+        analysisTime: delay,
+        totalPosts: matching.length,
+        posts: matching,
+        clusters: derivedClusters(matching),
+      });
+      setLoading(false);
+    }, delay);
   };
 
   const handleClusterOpen = (clusterId: string) => {
@@ -494,6 +556,7 @@ export function AppShell() {
             onSearch={handleSearch}
             loading={loading}
             accent={accent}
+            suggestions={searchSuggestions}
           />
           {queryData && !loading && (
             <div
@@ -532,10 +595,8 @@ export function AppShell() {
             loading={loading}
             accent={accent}
             density="spacious"
-            onSearch={handleSearch}
             onClusterOpen={handleClusterOpen}
             onTopicOpen={handleTopicOpen}
-            setQuery={setQuery}
             isPostSaved={isPostSaved}
             openPicker={openPicker}
           />

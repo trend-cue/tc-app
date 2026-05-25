@@ -2,7 +2,7 @@
 
 Discover trending posts across TikTok, Instagram, and X, and organize them into projects.
 
-Built with Next.js 15 (App Router, Turbopack), React 19, Supabase (Auth + Postgres), and Tailwind CSS v4. Trend data is currently served from in-repo mock data; persistence (auth, projects, saved posts) runs against Supabase.
+Built with Next.js 15 (App Router, Turbopack), React 19, Supabase (Auth + Postgres + Storage), and Tailwind CSS v4. Trend posts are loaded from Supabase; TikTok thumbnails are cached in Supabase Storage and detail views use TikTok's embedded player.
 
 ## Features
 
@@ -39,12 +39,13 @@ flowchart LR
         Client[Client components<br/>app-shell, discover-view,<br/>projects-view, detail-panel]
         SBClient[lib/supabase/client.ts]
         SBServer[lib/supabase/server.ts]
-        Mock[(lib/mock-data.ts<br/>trend posts + clusters)]
+        Posts[lib/posts-db.ts<br/>real posts + clusters]
     end
 
     subgraph Supabase["Supabase"]
         Auth[Auth<br/>email/password]
-        DB[(Postgres<br/>projects, project_posts<br/>+ RLS)]
+        DB[(Postgres<br/>posts, projects,<br/>project_posts + RLS)]
+        Storage[(Storage<br/>post-thumbnails)]
     end
 
     User -->|HTTP| MW
@@ -57,10 +58,12 @@ flowchart LR
     SBClient -->|RLS-scoped CRUD| DB
     SBServer --> Auth
     SBServer --> DB
-    Client --> Mock
+    Client --> Posts
+    Posts --> DB
+    Client -->|public thumbnail URLs| Storage
 ```
 
-Request flow: every request passes through [middleware.ts](src/middleware.ts), which refreshes the Supabase session cookie and redirects unauthenticated users to `/login`. The dashboard is a client shell that reads trends from mock data and writes saved posts to Supabase via the browser client. Server components (e.g. [app/page.tsx](src/app/page.tsx)) use the SSR client for the initial auth check.
+Request flow: every request passes through [middleware.ts](src/middleware.ts), which refreshes the Supabase session cookie and redirects unauthenticated users to `/login`. The dashboard is a client shell that reads trend posts from Supabase and writes saved posts to Supabase via the browser client. Server components (e.g. [app/page.tsx](src/app/page.tsx)) use the SSR client for the initial auth check.
 
 ## Database schema
 
@@ -68,6 +71,7 @@ Request flow: every request passes through [middleware.ts](src/middleware.ts), w
 erDiagram
     AUTH_USERS ||--o{ PROJECTS : owns
     PROJECTS ||--o{ PROJECT_POSTS : contains
+    POSTS ||--o{ PROJECT_POSTS : saved_as
 
     AUTH_USERS {
         uuid id PK
@@ -86,12 +90,21 @@ erDiagram
         text post_id PK
         timestamptz saved_at
     }
+    POSTS {
+        text id PK
+        text platform
+        text external_id
+        text source_url
+        text embed_url
+        text thumbnail_url
+    }
 ```
 
 Notes:
 
 - `auth.users` is managed by Supabase Auth.
-- `project_posts.post_id` is currently a string id from mock data; it will become a foreign key once a real `posts` table is introduced.
+- `project_posts.post_id` references real `posts.id`; the foreign key remains `NOT VALID` until legacy mock ids are cleaned up.
+- TikTok thumbnails are copied into the public `post-thumbnails` Storage bucket during ingest; the app does not rely on expiring TikTok CDN URLs for cards.
 - Every table has RLS enabled. Policies in [supabase/migrations/20260429_initial_schema.sql](supabase/migrations/20260429_initial_schema.sql) restrict reads/writes to rows owned by `auth.uid()`.
 - A `projects_updated_at` trigger keeps `updated_at` fresh on update.
 
@@ -104,7 +117,7 @@ src/
   lib/
     supabase/         SSR + browser Supabase clients
     types.ts          Post, Cluster, Project, helpers
-    mock-data.ts      Trend data fixture
+    posts-db.ts       Supabase post loading + derived clusters
   middleware.ts       Session refresh + auth redirects
 supabase/migrations/  SQL schema + RLS
 ```
