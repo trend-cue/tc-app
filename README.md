@@ -199,3 +199,9 @@ supabase/migrations/  SQL schema + RLS
 ## Deployment
 
 Configured for Vercel. The login route is rendered dynamically (no prerender) so Supabase cookies resolve at request time. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the Vercel project environment.
+
+## Testing and Recent Updates
+
+Testing exposed issues with displaying videos. In the process of solving this bug, thumbnails were temporarily removed before video playback and thumbnail functionality was restored. The ability to create a new project from a bookmark was also revealed to be faulty, which was then fixed. 
+
+Onboarding features were also added. This includes features for filtering by industry, which then applies to the homepage. Pricing plans were put in place, and the ability to invite others to a workspace via email was implimented.
