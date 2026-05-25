@@ -522,11 +522,55 @@ export function AppShell() {
     return id;
   };
 
-  const deleteProject = async (id: string) => {
+  const deleteProject = async (id: string): Promise<void> => {
     if (dbReady) {
-      await supabase.from("projects").delete().eq("id", id);
+      const { data, error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", id)
+        .select("id")
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) {
+        throw new Error(
+          "Project not found or you do not have permission to delete it."
+        );
+      }
     }
+
     setProjects((prev) => prev.filter((p) => p.id !== id));
+    setPickerState(null);
+
+    if (organizationContext?.preferences.first_saved_project_id === id) {
+      try {
+        const updatedAt = new Date().toISOString();
+        const nextPreferences = {
+          ...organizationContext.preferences,
+          first_saved_project_id: null,
+          updated_at: updatedAt,
+        };
+
+        await saveMemberPreferences(supabase, nextPreferences);
+        setOrganizationContext((prev) =>
+          prev
+            ? {
+                ...prev,
+                preferences: {
+                  ...prev.preferences,
+                  first_saved_project_id: null,
+                  updated_at: updatedAt,
+                },
+              }
+            : prev
+        );
+      } catch (error) {
+        console.warn(
+          "Could not clear deleted onboarding project reference:",
+          error instanceof Error ? error.message : error
+        );
+      }
+    }
   };
 
   const renameProject = async (id: string, name: string) => {

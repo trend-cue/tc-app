@@ -123,10 +123,11 @@ function ProjectCard({
   project: Project;
   allPosts: Post[];
   onClick: () => void;
-  onDelete: (id: string) => void;
+  onDelete: (project: Project) => void;
   accent: string;
 }) {
   const [hov, setHov] = useState(false);
+  const [deleteHov, setDeleteHov] = useState(false);
   const posts = project.postIds
     .map((id) => allPosts.find((p) => p.id === id))
     .filter(Boolean) as Post[];
@@ -201,38 +202,220 @@ function ProjectCard({
           </span>
         </div>
       </div>
-      {hov && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(project.id);
-          }}
+      <button
+        type="button"
+        title="Delete project"
+        aria-label={`Delete ${project.name}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(project);
+        }}
+        onMouseEnter={() => setDeleteHov(true)}
+        onMouseLeave={() => setDeleteHov(false)}
+        onFocus={() => setDeleteHov(true)}
+        onBlur={() => setDeleteHov(false)}
+        style={{
+          position: "absolute",
+          top: 10,
+          right: 10,
+          width: 30,
+          height: 30,
+          background: deleteHov ? "oklch(0.22 0.08 24)" : "#1a1a28",
+          border: `1px solid ${deleteHov ? "oklch(0.65 0.18 10)" : "#252535"}`,
+          borderRadius: 6,
+          padding: 0,
+          cursor: "pointer",
+          color: deleteHov ? "oklch(0.76 0.18 24)" : "#707090",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: hov || deleteHov ? 1 : 0.72,
+          transition: "all 0.12s",
+          boxShadow: deleteHov ? "0 0 0 1px rgba(255,255,255,0.04)" : "none",
+        }}
+      >
+        <IconTrash />
+      </button>
+    </div>
+  );
+}
+
+function DeleteProjectDialog({
+  project,
+  deleting,
+  error,
+  onCancel,
+  onConfirm,
+}: {
+  project: Project;
+  deleting: boolean;
+  error: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const postCount = project.postIds.length;
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !deleting) onCancel();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [deleting, onCancel]);
+
+  return (
+    <div
+      role="presentation"
+      onMouseDown={onCancel}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 10000,
+        background: "rgba(4, 4, 8, 0.72)",
+        backdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 18,
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-project-title"
+        onMouseDown={(event) => event.stopPropagation()}
+        style={{
+          width: "min(420px, 100%)",
+          background: "#101019",
+          border: "1px solid #2a1e26",
+          borderRadius: 8,
+          boxShadow: "0 24px 80px rgba(0, 0, 0, 0.55)",
+          overflow: "hidden",
+        }}
+      >
+        <div
           style={{
-            position: "absolute",
-            top: 10,
-            right: 10,
-            background: "#1a1a28",
-            border: "1px solid #252535",
-            borderRadius: 6,
-            padding: "4px 6px",
-            cursor: "pointer",
-            color: "#606080",
-            display: "flex",
-            alignItems: "center",
-            transition: "all 0.12s",
+            height: 4,
+            background: "oklch(0.65 0.18 10)",
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "oklch(0.65 0.18 10)";
-            e.currentTarget.style.borderColor = "oklch(0.65 0.18 10)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "#606080";
-            e.currentTarget.style.borderColor = "#252535";
-          }}
-        >
-          <IconTrash />
-        </button>
-      )}
+        />
+        <div style={{ padding: 18 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 10,
+            }}
+          >
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: "oklch(0.22 0.08 24)",
+                border: "1px solid oklch(0.65 0.18 10 / 0.45)",
+                color: "oklch(0.76 0.18 24)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <IconTrash />
+            </div>
+            <div>
+              <h3
+                id="delete-project-title"
+                style={{
+                  color: "#f0f0fa",
+                  fontSize: 15,
+                  margin: 0,
+                  lineHeight: 1.25,
+                }}
+              >
+                Delete project
+              </h3>
+              <div style={{ color: "#606080", fontSize: 11, marginTop: 2 }}>
+                {postCount} saved post{postCount === 1 ? "" : "s"} will be
+                removed from it
+              </div>
+            </div>
+          </div>
+          <p
+            style={{
+              color: "#a8a8c4",
+              fontSize: 13,
+              lineHeight: 1.6,
+              margin: "0 0 14px",
+            }}
+          >
+            Delete <strong style={{ color: "#f0f0fa" }}>{project.name}</strong>? Saved
+            posts stay in Discover, but this project and its project membership are
+            removed.
+          </p>
+          {error && (
+            <div
+              style={{
+                color: "oklch(0.74 0.18 24)",
+                background: "oklch(0.20 0.07 24)",
+                border: "1px solid oklch(0.55 0.16 24 / 0.5)",
+                borderRadius: 7,
+                padding: "8px 10px",
+                fontSize: 12,
+                marginBottom: 14,
+              }}
+            >
+              {error}
+            </div>
+          )}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={onCancel}
+              style={{
+                padding: "8px 12px",
+                background: "#1a1a28",
+                border: "1px solid #252535",
+                borderRadius: 7,
+                color: "#b0b0ca",
+                cursor: deleting ? "not-allowed" : "pointer",
+                fontFamily: "Space Grotesk, sans-serif",
+                fontSize: 12,
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={onConfirm}
+              style={{
+                padding: "8px 12px",
+                background: deleting ? "#32222a" : "oklch(0.58 0.18 10)",
+                border: "1px solid oklch(0.65 0.18 10)",
+                borderRadius: 7,
+                color: "#fff",
+                cursor: deleting ? "not-allowed" : "pointer",
+                fontFamily: "Space Grotesk, sans-serif",
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              {deleting ? "Deleting..." : "Delete project"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -243,6 +426,7 @@ function ProjectDetail({
   onBack,
   onRemovePost,
   onRename,
+  onDelete,
   accent,
 }: {
   project: Project;
@@ -250,9 +434,11 @@ function ProjectDetail({
   onBack: () => void;
   onRemovePost: (projectId: string, postId: string) => void;
   onRename: (id: string, name: string) => void;
+  onDelete: (project: Project) => void;
   accent: string;
 }) {
   const [editing, setEditing] = useState(false);
+  const [deleteHov, setDeleteHov] = useState(false);
   const [nameVal, setNameVal] = useState(project.name);
   const posts = project.postIds
     .map((id) => allPosts.find((p) => p.id === id))
@@ -363,6 +549,32 @@ function ProjectDetail({
         <span style={{ fontSize: 12, color: "#505070", marginLeft: 4 }}>
           {posts.length} post{posts.length !== 1 ? "s" : ""}
         </span>
+        <button
+          type="button"
+          title="Delete project"
+          aria-label={`Delete ${project.name}`}
+          onClick={() => onDelete(project)}
+          onMouseEnter={() => setDeleteHov(true)}
+          onMouseLeave={() => setDeleteHov(false)}
+          onFocus={() => setDeleteHov(true)}
+          onBlur={() => setDeleteHov(false)}
+          style={{
+            marginLeft: "auto",
+            width: 32,
+            height: 32,
+            background: deleteHov ? "oklch(0.22 0.08 24)" : "#161624",
+            border: `1px solid ${deleteHov ? "oklch(0.65 0.18 10)" : "#1e1e30"}`,
+            borderRadius: 8,
+            color: deleteHov ? "oklch(0.76 0.18 24)" : "#606080",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.12s",
+          }}
+        >
+          <IconTrash />
+        </button>
       </div>
 
       {posts.length === 0 ? (
@@ -424,7 +636,7 @@ export function ProjectsView({
   allPosts: Post[];
   onTogglePost: (projectId: string, postId: string) => void;
   onCreate: (name: string, color: string) => Promise<string>;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
   onRename: (id: string, name: string) => void;
   accent: string;
 }) {
@@ -432,6 +644,9 @@ export function ProjectsView({
   const [creatingNew, setCreatingNew] = useState(false);
   const [newName, setNewName] = useState("");
   const [newColor, setNewColor] = useState(PROJECT_COLORS[0]);
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const [deletingProject, setDeletingProject] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const sortedProjects = [...projects].sort(
     (a, b) =>
@@ -453,17 +668,62 @@ export function ProjectsView({
     }
   };
 
+  const requestDelete = (project: Project) => {
+    setDeleteTarget(project);
+    setDeleteError("");
+  };
+
+  const cancelDelete = () => {
+    if (deletingProject) return;
+    setDeleteTarget(null);
+    setDeleteError("");
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget || deletingProject) return;
+
+    setDeletingProject(true);
+    setDeleteError("");
+    try {
+      await onDelete(deleteTarget.id);
+      if (activeProject === deleteTarget.id) {
+        setActiveProject(null);
+      }
+      setDeleteTarget(null);
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error ? error.message : "Could not delete project"
+      );
+    } finally {
+      setDeletingProject(false);
+    }
+  };
+
+  const deleteDialog = deleteTarget ? (
+    <DeleteProjectDialog
+      project={deleteTarget}
+      deleting={deletingProject}
+      error={deleteError}
+      onCancel={cancelDelete}
+      onConfirm={confirmDelete}
+    />
+  ) : null;
+
   const active = projects.find((p) => p.id === activeProject);
   if (active) {
     return (
-      <ProjectDetail
-        project={active}
-        allPosts={allPosts}
-        onBack={() => setActiveProject(null)}
-        onRemovePost={onTogglePost}
-        onRename={onRename}
-        accent={accent}
-      />
+      <>
+        <ProjectDetail
+          project={active}
+          allPosts={allPosts}
+          onBack={() => setActiveProject(null)}
+          onRemovePost={onTogglePost}
+          onRename={onRename}
+          onDelete={requestDelete}
+          accent={accent}
+        />
+        {deleteDialog}
+      </>
     );
   }
 
@@ -635,12 +895,13 @@ export function ProjectsView({
               project={proj}
               allPosts={allPosts}
               onClick={() => setActiveProject(proj.id)}
-              onDelete={onDelete}
+              onDelete={requestDelete}
               accent={accent}
             />
           ))}
         </div>
       )}
+      {deleteDialog}
     </div>
   );
 }
