@@ -1,9 +1,118 @@
 "use client";
 
-import { useState } from "react";
+/* eslint-disable @next/next/no-img-element */
+
+import { useEffect, useState } from "react";
 import { Post, Project, PROJECT_COLORS } from "@/lib/types";
 import { IconPlus, IconBack, IconTrash, IconPencil } from "./icons";
 import { PostCard } from "./post-card";
+
+function ProjectPreviewTile({
+  post,
+  showEmptyMark,
+}: {
+  post?: Post;
+  showEmptyMark: boolean;
+}) {
+  const [failed, setFailed] = useState(false);
+  const imageUrl = post?.thumbnail.url;
+  const hasImage = !!imageUrl && !failed;
+  const accent = post?.thumbnail.accent || "#252535";
+
+  useEffect(() => {
+    setFailed(false);
+  }, [imageUrl]);
+
+  return (
+    <div
+      style={{
+        background: hasImage
+          ? "#050508"
+          : post
+            ? `linear-gradient(135deg, ${accent}24, #111119 58%), repeating-linear-gradient(45deg, #13131c 0px, #13131c 3px, #1a1a28 3px, #1a1a28 9px)`
+            : "#0d0d16",
+        border: post ? `1px solid ${accent}24` : "1px solid transparent",
+        borderRadius: 5,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        overflow: "hidden",
+        minWidth: 0,
+        minHeight: 0,
+      }}
+    >
+      {hasImage && (
+        <img
+          src={imageUrl}
+          alt=""
+          loading="lazy"
+          onError={() => setFailed(true)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      )}
+      {post && hasImage && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(5,5,8,0.04), rgba(5,5,8,0.32))",
+          }}
+        />
+      )}
+      {post?.isVideo && (
+        <div
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: "50%",
+            background: hasImage ? "rgba(0,0,0,0.42)" : accent + "30",
+            border: `1px solid ${hasImage ? "rgba(255,255,255,0.34)" : accent + "55"}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+            zIndex: 1,
+            backdropFilter: hasImage ? "blur(4px)" : undefined,
+          }}
+        >
+          <div
+            style={{
+              width: 0,
+              height: 0,
+              borderTop: "4px solid transparent",
+              borderBottom: "4px solid transparent",
+              borderLeft: `7px solid ${hasImage ? "#fff" : accent}`,
+              marginLeft: 2,
+            }}
+          />
+        </div>
+      )}
+      {post && !post.isVideo && !hasImage && (
+        <div
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: 2,
+            background: accent + "70",
+            position: "relative",
+            zIndex: 1,
+          }}
+        />
+      )}
+      {!post && showEmptyMark && (
+        <span style={{ fontSize: 18, opacity: 0.08 }}>&#x25C8;</span>
+      )}
+    </div>
+  );
+}
 
 function ProjectCard({
   project,
@@ -48,42 +157,19 @@ function ProjectCard({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          gridTemplateRows: "repeat(2, minmax(0, 1fr))",
           gap: 2,
           padding: "12px 12px 0",
-          height: 100,
+          aspectRatio: "1 / 1",
         }}
       >
         {[0, 1, 2, 3].map((i) => (
-          <div
+          <ProjectPreviewTile
             key={i}
-            style={{
-              background: preview[i]
-                ? "repeating-linear-gradient(45deg, #13131c 0px, #13131c 3px, #1a1a28 3px, #1a1a28 9px)"
-                : "#0d0d16",
-              borderRadius: 5,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {preview[i] && (
-              <div
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 2,
-                  background:
-                    (preview[i]!.thumbnail?.accent || "#ffffff") + "60",
-                }}
-              />
-            )}
-            {!preview[i] && i === 0 && posts.length === 0 && (
-              <span style={{ fontSize: 18, opacity: 0.08 }}>
-                &#x25C8;
-              </span>
-            )}
-          </div>
+            post={preview[i]}
+            showEmptyMark={i === 0 && posts.length === 0}
+          />
         ))}
       </div>
       <div style={{ padding: "10px 14px 14px" }}>
