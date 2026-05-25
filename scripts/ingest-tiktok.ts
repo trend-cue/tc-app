@@ -2,8 +2,8 @@
  * Sample-data ingest for TikTok URLs.
  *
  * Usage:
- *   npm run ingest:tiktok           # ingests the URLs in TIKTOK_URLS below
- *   npm run ingest:tiktok -- --dry  # fetch + normalize, print, do not write
+ *   pnpm run ingest:tiktok           # ingests the URLs in TIKTOK_URLS below
+ *   pnpm run ingest:tiktok -- --dry  # fetch + normalize, print, do not write
  *
  * Requires:
  *   - yt-dlp on PATH (brew install yt-dlp)

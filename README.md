@@ -15,8 +15,8 @@ Built with Next.js 15 (App Router, Turbopack), React 19, Supabase (Auth + Postgr
 
 ```bash
 cp .env.local.example .env.local   # fill in Supabase URL + anon key
-npm install
-npm run dev                         # http://localhost:3000
+pnpm install
+pnpm run dev                        # http://localhost:3000
 ```
 
 Apply the schema to your Supabase project:

@@ -37,8 +37,8 @@ supabase db push
 URLs live in the `TIKTOK_URLS` array at the top of [scripts/ingest-tiktok.ts](../scripts/ingest-tiktok.ts).
 
 ```bash
-npm run ingest:tiktok -- --dry   # fetch + normalize, print, no DB write
-npm run ingest:tiktok            # fetch + upsert into posts
+pnpm run ingest:tiktok -- --dry   # fetch + normalize, print, no DB write
+pnpm run ingest:tiktok            # fetch + upsert into posts
 ```
 
 Re-running is safe: rows are upserted on `id` (= `tiktok:<video_id>`), so the same URL list refreshes engagement counts.
