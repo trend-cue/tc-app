@@ -7,6 +7,7 @@ Built with Next.js 15 (App Router, Turbopack), React 19, Supabase (Auth + Postgr
 ## Features
 
 - Email/password auth with Supabase, session managed via SSR cookies in [middleware](src/middleware.ts)
+- Strong password policy enforced by Supabase Auth config: 12+ characters with uppercase, lowercase, numeric, and special characters
 - Discover view: clustered trending posts with filters, search, and a detail panel
 - Projects view: save posts into colored projects scoped per user (RLS-enforced)
 - Server and client Supabase helpers in [src/lib/supabase/](src/lib/supabase/)
@@ -23,6 +24,12 @@ Apply the schema to your Supabase project:
 
 ```bash
 psql "$SUPABASE_DB_URL" -f supabase/migrations/20260429_initial_schema.sql
+```
+
+Apply Supabase project configuration after linking the project:
+
+```bash
+supabase config push
 ```
 
 Scripts: `dev`, `build`, `start`, `lint`.
@@ -103,6 +110,7 @@ erDiagram
 Notes:
 
 - `auth.users` is managed by Supabase Auth.
+- Password hashes are managed by Supabase Auth; the app never stores raw passwords.
 - `project_posts.post_id` references real `posts.id`; the foreign key remains `NOT VALID` until legacy mock ids are cleaned up.
 - TikTok thumbnails are copied into the public `post-thumbnails` Storage bucket during ingest; the app does not rely on expiring TikTok CDN URLs for cards.
 - Every table has RLS enabled. Policies in [supabase/migrations/20260429_initial_schema.sql](supabase/migrations/20260429_initial_schema.sql) restrict reads/writes to rows owned by `auth.uid()`.

@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_POLICY_MESSAGE,
+  getPasswordPolicyError,
+} from "@/lib/auth/password-policy";
 import { useRouter } from "next/navigation";
 
 export function LoginForm() {
@@ -22,6 +27,13 @@ export function LoginForm() {
 
     try {
       if (isSignUp) {
+        const passwordPolicyError = getPasswordPolicyError(password);
+
+        if (passwordPolicyError) {
+          setError(passwordPolicyError);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
       } else {
@@ -196,9 +208,12 @@ export function LoginForm() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={
+                isSignUp ? "Create a strong password" : "Enter your password"
+              }
               required
-              minLength={6}
+              minLength={isSignUp ? PASSWORD_MIN_LENGTH : undefined}
+              autoComplete={isSignUp ? "new-password" : "current-password"}
               style={{
                 width: "100%",
                 background: "#111119",
@@ -217,6 +232,19 @@ export function LoginForm() {
                 (e.currentTarget.style.borderColor = "#1e1e2e")
               }
             />
+            {isSignUp && (
+              <p
+                style={{
+                  marginTop: 8,
+                  marginBottom: 0,
+                  fontSize: 12,
+                  lineHeight: 1.4,
+                  color: "#606080",
+                }}
+              >
+                {PASSWORD_POLICY_MESSAGE}
+              </p>
+            )}
           </div>
 
           {error && (
