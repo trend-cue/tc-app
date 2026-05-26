@@ -22,32 +22,98 @@ function tiktokPlayerUrl(post: Post): string | null {
   return url.toString();
 }
 
-function TikTokPlayer({ post }: { post: Post }) {
+function VideoPlayer({ post }: { post: Post }) {
   const src = tiktokPlayerUrl(post);
-  if (!src) return <Thumb data={post.thumbnail} isVideo={post.isVideo} />;
+  const pm = PLATFORM_META[post.platform] || PLATFORM_META.twitter;
+  const aspectRatio = "9/16";
+
+  if (!src) {
+    const watchUrl = post.sourceUrl ?? null;
+    return (
+      <div
+        style={{ position: "relative", cursor: watchUrl ? "pointer" : "default" }}
+        onClick={() => watchUrl && window.open(watchUrl, "_blank", "noopener,noreferrer")}
+      >
+        <Thumb data={post.thumbnail} isVideo={post.isVideo} />
+        {watchUrl && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 14,
+              left: "50%",
+              transform: "translateX(-50%)",
+              background: "rgba(0,0,0,0.72)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: 9,
+              padding: "9px 18px",
+              color: "#fff",
+              fontSize: 12,
+              fontWeight: 700,
+              fontFamily: "Space Grotesk, sans-serif",
+              display: "flex",
+              alignItems: "center",
+              gap: 7,
+              whiteSpace: "nowrap",
+              letterSpacing: "0.01em",
+              pointerEvents: "none",
+            }}
+          >
+            <span style={{ fontSize: 11 }}>▶</span>
+            Watch on {pm.label} ↗
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div
-      style={{
-        width: "100%",
-        aspectRatio: "9/16",
-        borderRadius: 8,
-        overflow: "hidden",
-        background: "#000",
-      }}
-    >
-      <iframe
-        src={src}
-        title={post.thumbnail.label}
-        loading="lazy"
-        allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div
         style={{
           width: "100%",
-          height: "100%",
-          border: "none",
-          display: "block",
+          aspectRatio,
+          borderRadius: 8,
+          overflow: "hidden",
+          background: "#000",
         }}
-      />
+      >
+        <iframe
+          src={src}
+          title={post.thumbnail.label}
+          loading="lazy"
+          allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
+          allowFullScreen
+          style={{
+            width: "100%",
+            height: "100%",
+            border: "none",
+            display: "block",
+          }}
+        />
+      </div>
+      {post.sourceUrl && (
+        <a
+          href={post.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 11,
+            color: "#5a5a78",
+            textDecoration: "none",
+            padding: "4px 2px",
+            transition: "color 0.15s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#9898b2")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#5a5a78")}
+        >
+          <span style={{ color: pm.color, fontSize: 10 }}>↗</span>
+          View original on {pm.label}
+        </a>
+      )}
     </div>
   );
 }
@@ -264,10 +330,10 @@ export function DetailPanel({
                 </div>
               </div>
             </div>
-            {post.platform === "tiktok" && post.isVideo ? (
-              <TikTokPlayer post={post} />
+            {post.isVideo ? (
+              <VideoPlayer post={post} />
             ) : (
-              <Thumb data={post.thumbnail} isVideo={post.isVideo} />
+              <Thumb data={post.thumbnail} isVideo={false} />
             )}
           </div>
 

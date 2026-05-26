@@ -51,11 +51,14 @@ export function TrendBar({
 export function Thumb({
   data,
   isVideo,
+  onPlay,
 }: {
   data: { label: string; accent: string; url?: string };
   isVideo: boolean;
+  onPlay?: (e: React.MouseEvent) => void;
 }) {
   const [failed, setFailed] = useState(false);
+  const [playHovered, setPlayHovered] = useState(false);
   const hasImage = !!data.url && !failed;
 
   useEffect(() => {
@@ -66,7 +69,7 @@ export function Thumb({
     <div
       style={{
         width: "100%",
-        aspectRatio: isVideo ? "9/16" : "4/5",
+        aspectRatio: "4/5",
         background: hasImage
           ? "#000"
           : "repeating-linear-gradient(45deg, #16161e 0px, #16161e 4px, #202030 4px, #202030 12px)",
@@ -92,22 +95,32 @@ export function Thumb({
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            transition: "transform 0.2s ease",
+            transform: playHovered && onPlay ? "scale(1.04)" : "scale(1)",
           }}
         />
       )}
       <div
+        onClick={onPlay}
+        onMouseEnter={() => onPlay && setPlayHovered(true)}
+        onMouseLeave={() => setPlayHovered(false)}
         style={{
-          width: 32,
-          height: 32,
+          width: playHovered && onPlay ? 38 : 32,
+          height: playHovered && onPlay ? 38 : 32,
           borderRadius: "50%",
-          background: data.accent + (hasImage ? "60" : "30"),
-          border: `1px solid ${data.accent}${hasImage ? "" : "50"}`,
+          background: playHovered && onPlay
+            ? data.accent + "dd"
+            : data.accent + (hasImage ? "60" : "30"),
+          border: `1px solid ${data.accent}${hasImage ? (playHovered && onPlay ? "" : "90") : "50"}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           backdropFilter: hasImage ? "blur(4px)" : undefined,
           position: "relative",
           zIndex: 1,
+          cursor: onPlay ? "pointer" : "default",
+          transition: "all 0.15s ease",
+          boxShadow: playHovered && onPlay ? `0 0 20px ${data.accent}60` : "none",
         }}
       >
         {isVideo && (

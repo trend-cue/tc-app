@@ -14,7 +14,7 @@ export const MOCK_TIERS: MockTier[] = [
   {
     key: "starter",
     name: "Starter",
-    price: "$0",
+    price: "$20",
     amountCents: 0,
     cadence: "forever",
     description: "For one-person trend scouting.",
@@ -22,8 +22,8 @@ export const MOCK_TIERS: MockTier[] = [
   },
   {
     key: "growth",
-    name: "Growth",
-    price: "$29",
+    name: "Team",
+    price: "$40",
     amountCents: 2900,
     cadence: "per month",
     description: "For small teams building repeatable research.",
@@ -31,7 +31,7 @@ export const MOCK_TIERS: MockTier[] = [
   },
   {
     key: "scale",
-    name: "Scale",
+    name: "Enterprise",
     price: "$99",
     amountCents: 9900,
     cadence: "per month",

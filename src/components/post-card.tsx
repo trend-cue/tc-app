@@ -108,7 +108,18 @@ export function PostCard({
 
       {/* Thumbnail */}
       <div style={{ marginBottom: 12 }}>
-        <Thumb data={post.thumbnail} isVideo={post.isVideo} />
+        <Thumb
+          data={post.thumbnail}
+          isVideo={post.isVideo}
+          onPlay={
+            post.isVideo && post.sourceUrl
+              ? (e) => {
+                  e.stopPropagation();
+                  window.open(post.sourceUrl, "_blank", "noopener,noreferrer");
+                }
+              : undefined
+          }
+        />
       </div>
 
       {/* Content */}

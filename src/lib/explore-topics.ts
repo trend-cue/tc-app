@@ -11,59 +11,58 @@ const corpus = (p: Post) =>
 
 export const EXPLORE_TOPICS: ExploreTopic[] = [
   {
-    id: "volleyball",
-    label: "Volleyball plays",
-    match: (p) => /volleyball|ushiwaka/i.test(corpus(p)),
-  },
-  {
-    id: "mtb",
-    label: "Mountain biking",
-    match: (p) => /\bmtb\b|mountainbik|bikelife|redbullbike/i.test(corpus(p)),
-  },
-  {
-    id: "streetball",
-    label: "Streetball & basketball",
-    match: (p) => /basketball|streetball|kiatipis/i.test(corpus(p)),
-  },
-  {
-    id: "pastry",
-    label: "Pastries & desserts",
+    id: "gym",
+    label: "Gym brands & fit checks",
     match: (p) =>
-      /pastry|patisserie|pasticceria|dessert|pastrychef/i.test(corpus(p)),
-  },
-  {
-    id: "beauty",
-    label: "Beauty & glow-up",
-    match: (p) =>
-      /lipstick|lashes|beauty|makeup|laser|braceface|skincare|glow|aesthetic/i.test(
+      /gymshark|alphalete|dfyne|nvgtn|gymtok|gym\s*brand|gymwear|gym\s*fit|activewear/i.test(
         corpus(p)
       ),
   },
   {
-    id: "records",
-    label: "World records & feats",
+    id: "gymlifting",
+    label: "Lifting & strength",
     match: (p) =>
-      /guinness|world record|worldrecord|revolution.*skip/i.test(corpus(p)),
-  },
-  {
-    id: "gaming",
-    label: "Gaming & 3D edits",
-    match: (p) =>
-      /roblox|granturismo|3danimation|gaming|cinematic/i.test(corpus(p)),
-  },
-  {
-    id: "popculture",
-    label: "Pop culture pulse",
-    match: (p) =>
-      /coachella|sabrinacarpenter|madonna|sidemen|charitymatch|maxfosh|likeaprayer/i.test(
+      /deadlift|squat|bench|lifting|powerlifting|strength|workout|gains|muscle/i.test(
         corpus(p)
       ),
   },
   {
-    id: "comedy",
-    label: "Comedy & POV",
+    id: "ai",
+    label: "AI & the future of tech",
     match: (p) =>
-      /\bpov\b|crashout|absurdcomedy|комедия|humor|delivery|shoppingproblems/i.test(
+      /\bai\b|artificial\s*intelligence|coding|developer|stem|llm|chatgpt|machine\s*learning/i.test(
+        corpus(p)
+      ),
+  },
+  {
+    id: "techcreators",
+    label: "Tech creators & rankings",
+    match: (p) =>
+      /mkbhd|mrwhosetheboss|colinandsamir|techyoutuber|tech\s*creator|youtuber/i.test(
+        corpus(p)
+      ),
+  },
+  {
+    id: "gadgets",
+    label: "Gadgets & reviews",
+    match: (p) =>
+      /gadget|review|smartglasses|smart\s*glasses|oneplus|apple|phone|unboxing|tech\s*review/i.test(
+        corpus(p)
+      ),
+  },
+  {
+    id: "ootd",
+    label: "OOTD & outfit inspo",
+    match: (p) =>
+      /\bootd\b|outfit|whatimwearing|wiw|fashion|style|lookbook|inspo/i.test(
+        corpus(p)
+      ),
+  },
+  {
+    id: "zarafinds",
+    label: "Zara & high-street finds",
+    match: (p) =>
+      /zara|zarahaul|mango|hm\b|highstreet|affordablefashion|springfashion/i.test(
         corpus(p)
       ),
   },

@@ -1,6 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { Cluster, Post } from "./types";
 import { CLUSTER_DIRECTORY, clusterById } from "./clusters";
+import { MOCK_POSTS } from "./mock-data";
 
 interface PostRow {
   id: string;
@@ -105,9 +106,12 @@ export async function fetchPosts(supabase: SupabaseClient): Promise<Post[]> {
     .order("trend_score", { ascending: false });
   if (error) {
     console.warn("Failed to load posts from Supabase:", error.message);
-    return [];
+    return MOCK_POSTS;
   }
-  return (data as PostRow[]).map(rowToPost);
+  const supabasePosts = (data as PostRow[]).map(rowToPost);
+  const supabaseIds = new Set(supabasePosts.map((p) => p.id));
+  const uniqueMocks = MOCK_POSTS.filter((p) => !supabaseIds.has(p.id));
+  return [...uniqueMocks, ...supabasePosts];
 }
 
 // Derive a Cluster summary (counts, avg score, top hashtag) from a set of

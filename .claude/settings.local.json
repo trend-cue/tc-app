@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "WebSearch",
+      "Bash(yt-dlp *)",
+      "Bash(node scripts/fetch-tiktok-oembed.mjs)"
     ]
   }
 }
