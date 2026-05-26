@@ -47,18 +47,18 @@ export function SearchBar({
           display: "flex",
           alignItems: "center",
           gap: 12,
-          background: "#0f0f1a",
-          border: `1px solid ${focused ? accent + "55" : "#1e1e30"}`,
+          background: "#141419",
+          border: `1px solid ${focused ? accent + "60" : "#28283a"}`,
           borderRadius: 12,
           padding: "0 16px",
           height: 50,
-          boxShadow: focused ? `0 0 0 3px ${accent}12` : "none",
+          boxShadow: focused ? `0 0 0 3px ${accent}14, 0 4px 20px ${accent}08` : "none",
           transition: "all 0.18s",
         }}
       >
         <span
           style={{
-            color: focused ? accent : "#404060",
+            color: focused ? accent : "#4a4a64",
             display: "flex",
             flexShrink: 0,
             transition: "color 0.18s",
@@ -90,7 +90,7 @@ export function SearchBar({
             border: "none",
             outline: "none",
             fontSize: 14,
-            color: "#e8e8f0",
+            color: "#eeeef4",
             fontFamily: "Space Grotesk, sans-serif",
           }}
         />
@@ -147,15 +147,15 @@ export function SearchBar({
         <div
           style={{
             position: "absolute",
-            top: "calc(100% + 2px)",
+            top: "calc(100% + 4px)",
             left: 28,
             right: 28,
-            background: "#0f0f1a",
-            border: "1px solid #1e1e30",
+            background: "#141419",
+            border: "1px solid #28283a",
             borderRadius: 10,
             overflow: "hidden",
             zIndex: 100,
-            boxShadow: "0 16px 48px #00000090",
+            boxShadow: "0 16px 48px #00000099",
           }}
         >
           {filtered.slice(0, 5).map((s, i) => (
@@ -170,21 +170,21 @@ export function SearchBar({
                 gap: 10,
                 borderBottom:
                   i < Math.min(filtered.length, 5) - 1
-                    ? "1px solid #131320"
+                    ? "1px solid #191926"
                     : "none",
                 transition: "background 0.1s",
               }}
               onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "#151525")
+                (e.currentTarget.style.background = "#1c1c26")
               }
               onMouseLeave={(e) =>
                 (e.currentTarget.style.background = "transparent")
               }
             >
-              <span style={{ color: "#404060", display: "flex" }}>
+              <span style={{ color: "#4e4e68", display: "flex" }}>
                 <IconSearch />
               </span>
-              <span style={{ fontSize: 13, color: "#a0a0c0" }}>{s}</span>
+              <span style={{ fontSize: 13, color: "#9696b0" }}>{s}</span>
             </div>
           ))}
         </div>

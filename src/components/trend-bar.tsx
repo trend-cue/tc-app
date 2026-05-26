@@ -17,7 +17,7 @@ export function TrendBar({
         style={{
           flex: 1,
           height: 3,
-          background: "#1e1e30",
+          background: "#222234",
           borderRadius: 2,
           overflow: "hidden",
         }}
@@ -69,7 +69,7 @@ export function Thumb({
         aspectRatio: isVideo ? "9/16" : "4/5",
         background: hasImage
           ? "#000"
-          : "repeating-linear-gradient(45deg, #13131c 0px, #13131c 4px, #1a1a28 4px, #1a1a28 12px)",
+          : "repeating-linear-gradient(45deg, #16161e 0px, #16161e 4px, #202030 4px, #202030 12px)",
         borderRadius: 8,
         display: "flex",
         flexDirection: "column",

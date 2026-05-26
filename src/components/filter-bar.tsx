@@ -21,13 +21,13 @@ export function FilterBar({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "14px 0 10px",
+        padding: "12px 0 10px",
         flexShrink: 0,
       }}
     >
       <div style={{ display: "flex", gap: 4 }}>
         {[
-          { id: "all", label: "All Platforms" },
+          { id: "all", label: "All" },
           { id: "tiktok", label: "TikTok" },
           { id: "instagram", label: "Instagram" },
           { id: "twitter", label: "X" },
@@ -44,13 +44,13 @@ export function FilterBar({
               key={id}
               onClick={() => setPlatform(id)}
               style={{
-                padding: "5px 12px",
+                padding: "4px 12px",
                 borderRadius: 20,
-                border: `1px solid ${active ? colors[id] + "50" : "#1e1e2e"}`,
-                background: active ? colors[id] + "15" : "transparent",
+                border: `1px solid ${active ? colors[id] + "55" : "#242436"}`,
+                background: active ? colors[id] + "14" : "transparent",
                 fontSize: 11,
                 fontWeight: active ? 600 : 400,
-                color: active ? colors[id] : "#606080",
+                color: active ? colors[id] : "#5e5e78",
                 cursor: "pointer",
                 fontFamily: "Space Grotesk, sans-serif",
                 transition: "all 0.15s",
@@ -66,7 +66,7 @@ export function FilterBar({
           <span
             style={{
               fontSize: 11,
-              color: "#404060",
+              color: "#484862",
               fontFamily: "Space Mono, monospace",
             }}
           >
@@ -77,20 +77,20 @@ export function FilterBar({
           value={sort}
           onChange={(e) => setSort(e.target.value)}
           style={{
-            background: "#0f0f1a",
-            border: "1px solid #1e1e2e",
+            background: "#141419",
+            border: "1px solid #28283a",
             borderRadius: 7,
             padding: "5px 10px",
             fontSize: 11,
-            color: "#8080a8",
+            color: "#7878a0",
             cursor: "pointer",
             fontFamily: "Space Grotesk, sans-serif",
             outline: "none",
           }}
         >
-          <option value="trending">Sort: Trending</option>
-          <option value="recent">Sort: Recent</option>
-          <option value="engagement">Sort: Engagement</option>
+          <option value="trending">Trending</option>
+          <option value="recent">Recent</option>
+          <option value="engagement">Engagement</option>
         </select>
       </div>
     </div>

@@ -82,7 +82,7 @@ export function DetailPanel({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(4, 4, 8, 0.78)",
+        background: "rgba(6, 6, 10, 0.82)",
         backdropFilter: "blur(6px)",
         zIndex: 100,
         display: "flex",
@@ -98,10 +98,10 @@ export function DetailPanel({
           width: "100%",
           maxWidth: 880,
           maxHeight: "90vh",
-          background: "#0d0d16",
-          border: "1px solid #1f1f30",
-          borderRadius: 16,
-          boxShadow: "0 30px 80px rgba(0, 0, 0, 0.6)",
+          background: "#131318",
+          border: "1px solid #252538",
+          borderRadius: 18,
+          boxShadow: "0 30px 80px rgba(0, 0, 0, 0.65)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -111,7 +111,7 @@ export function DetailPanel({
         <div
           style={{
             padding: "14px 18px",
-            borderBottom: "1px solid #1a1a28",
+            borderBottom: "1px solid #202030",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -175,7 +175,7 @@ export function DetailPanel({
               onClick={onClose}
               aria-label="Dismiss"
               style={{
-                background: "#161624",
+                background: "#1c1c26",
                 border: "1px solid #252535",
                 cursor: "pointer",
                 color: "#a0a0c0",
@@ -216,8 +216,8 @@ export function DetailPanel({
           <div
             style={{
               padding: 22,
-              background: "#08080d",
-              borderRight: "1px solid #1a1a28",
+              background: "#0d0d12",
+              borderRight: "1px solid #202030",
               display: "flex",
               flexDirection: "column",
               gap: 14,
@@ -323,7 +323,7 @@ export function DetailPanel({
                     justifyContent: "space-between",
                     alignItems: "flex-start",
                     padding: "9px 0",
-                    borderBottom: "1px solid #161622",
+                    borderBottom: "1px solid #1e1e2e",
                   }}
                 >
                   <div>
@@ -382,9 +382,9 @@ export function DetailPanel({
                       alignItems: "center",
                       gap: 8,
                       padding: "6px 10px",
-                      background: "#111119",
+                      background: "#17171d",
                       borderRadius: 7,
-                      border: "1px solid #1a1a28",
+                      border: "1px solid #202030",
                     }}
                   >
                     <span
@@ -442,8 +442,8 @@ export function DetailPanel({
                   <div
                     key={label}
                     style={{
-                      background: "#111119",
-                      border: "1px solid #1a1a28",
+                      background: "#17171d",
+                      border: "1px solid #202030",
                       borderRadius: 8,
                       padding: "10px 12px",
                     }}

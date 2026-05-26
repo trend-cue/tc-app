@@ -65,14 +65,32 @@ function GeneralDiscovery({
   const SectionLabel = ({ children }: { children: React.ReactNode }) => (
     <div
       style={{
-        fontSize: 10,
-        fontWeight: 700,
-        color: "#404060",
-        letterSpacing: "0.1em",
-        marginBottom: 14,
+        display: "flex",
+        alignItems: "center",
+        gap: 9,
+        marginBottom: 18,
       }}
     >
-      {children}
+      <div
+        style={{
+          width: 3,
+          height: 13,
+          background: accent,
+          borderRadius: 2,
+          flexShrink: 0,
+          opacity: 0.6,
+        }}
+      />
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#8888a4",
+          letterSpacing: "0.03em",
+        }}
+      >
+        {children}
+      </span>
     </div>
   );
 
@@ -106,20 +124,25 @@ function GeneralDiscovery({
                 className="card-enter"
                 style={{
                   animationDelay: `${i * 0.05}s`,
-                  background: "#0f0f1a",
-                  border: `1px solid ${c.color}25`,
-                  borderRadius: 10,
+                  background: "#141419",
+                  border: `1px solid ${c.color}35`,
+                  borderRadius: 12,
                   padding: "14px 16px",
                   cursor: "pointer",
-                  transition: "all 0.15s",
+                  transition: "all 0.18s",
+                  boxShadow: `inset 0 2px 0 ${c.color}45`,
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#141422";
-                  e.currentTarget.style.borderColor = c.color + "50";
+                  e.currentTarget.style.background = "#1c1c25";
+                  e.currentTarget.style.borderColor = c.color + "60";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                  e.currentTarget.style.boxShadow = `inset 0 2px 0 ${c.color}65, 0 6px 18px ${c.color}08`;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#0f0f1a";
-                  e.currentTarget.style.borderColor = c.color + "25";
+                  e.currentTarget.style.background = "#141419";
+                  e.currentTarget.style.borderColor = c.color + "35";
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = `inset 0 2px 0 ${c.color}45`;
                 }}
               >
                 <div
@@ -134,7 +157,7 @@ function GeneralDiscovery({
                     style={{
                       fontSize: 13,
                       fontWeight: 600,
-                      color: "#d0d0e8",
+                      color: "#e4e4f2",
                       lineHeight: 1.3,
                       flex: 1,
                       paddingRight: 8,
@@ -146,10 +169,10 @@ function GeneralDiscovery({
                     style={{
                       fontSize: 10,
                       color: c.color,
-                      background: c.color + "18",
-                      padding: "2px 8px",
+                      background: c.color + "1e",
+                      padding: "2px 9px",
                       borderRadius: 20,
-                      fontWeight: 600,
+                      fontWeight: 700,
                       flexShrink: 0,
                     }}
                   >
@@ -159,9 +182,9 @@ function GeneralDiscovery({
                 <p
                   style={{
                     fontSize: 11,
-                    color: "#606080",
-                    lineHeight: 1.55,
-                    margin: "0 0 10px",
+                    color: "#686882",
+                    lineHeight: 1.6,
+                    margin: "0 0 12px",
                     display: "-webkit-box",
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: "vertical",
@@ -181,7 +204,7 @@ function GeneralDiscovery({
                     style={{
                       height: 3,
                       flex: 1,
-                      background: "#1a1a28",
+                      background: "#202030",
                       borderRadius: 2,
                       marginRight: 10,
                     }}
@@ -196,8 +219,8 @@ function GeneralDiscovery({
                       }}
                     />
                   </div>
-                  <span style={{ fontSize: 10, color: "#505070", flexShrink: 0 }}>
-                    {c.postCount.toLocaleString()} posts · score {c.trendScore}
+                  <span style={{ fontSize: 10, color: "#606074", flexShrink: 0 }}>
+                    {c.postCount.toLocaleString()} posts · {c.trendScore}
                   </span>
                 </div>
               </div>
@@ -249,28 +272,30 @@ function GeneralDiscovery({
       >
         <div
           style={{
-            background: "#0f0f1a",
-            border: "1px solid #1a1a28",
+            background: "#141419",
+            border: "1px solid #202030",
             borderRadius: 12,
             padding: "16px 14px",
           }}
         >
           <div
             style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "#404060",
-              letterSpacing: "0.1em",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
               marginBottom: 12,
             }}
           >
-            EXPLORE TOPICS
+            <div style={{ width: 3, height: 11, background: accent, borderRadius: 2, opacity: 0.55 }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#7a7a96", letterSpacing: "0.03em" }}>
+              Explore Topics
+            </span>
           </div>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 4,
+              gap: 2,
             }}
           >
             {exploreTopics.map(({ topic, posts: tposts }) => (
@@ -281,23 +306,23 @@ function GeneralDiscovery({
                   display: "flex",
                   alignItems: "center",
                   fontSize: 12,
-                  color: "#a0a0c0",
+                  color: "#9696b0",
                   cursor: "pointer",
-                  padding: "9px 10px",
+                  padding: "8px 10px",
                   borderRadius: 7,
                   border: "1px solid transparent",
                   lineHeight: 1.4,
                   transition: "all 0.13s",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#161624";
-                  e.currentTarget.style.borderColor = "#1e1e30";
-                  e.currentTarget.style.color = "#e0e0f0";
+                  e.currentTarget.style.background = "#1c1c26";
+                  e.currentTarget.style.borderColor = "#28283a";
+                  e.currentTarget.style.color = "#eeeef4";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = "transparent";
                   e.currentTarget.style.borderColor = "transparent";
-                  e.currentTarget.style.color = "#a0a0c0";
+                  e.currentTarget.style.color = "#9696b0";
                 }}
               >
                 <span
@@ -309,7 +334,7 @@ function GeneralDiscovery({
                 <span
                   style={{
                     fontSize: 10,
-                    color: "#505070",
+                    color: "#606074",
                     fontFamily: "Space Mono, monospace",
                     marginLeft: 6,
                   }}
@@ -323,22 +348,24 @@ function GeneralDiscovery({
 
         <div
           style={{
-            background: "#0f0f1a",
-            border: "1px solid #1a1a28",
+            background: "#141419",
+            border: "1px solid #202030",
             borderRadius: 12,
             padding: "16px 14px",
           }}
         >
           <div
             style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "#404060",
-              letterSpacing: "0.1em",
-              marginBottom: 12,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 14,
             }}
           >
-            PLATFORM MIX
+            <div style={{ width: 3, height: 11, background: accent, borderRadius: 2, opacity: 0.55 }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#7a7a96", letterSpacing: "0.03em" }}>
+              Platform Mix
+            </span>
           </div>
           {[
             { id: "tiktok", label: "TikTok", color: "#69c9d0" },
@@ -348,22 +375,22 @@ function GeneralDiscovery({
             const count = platformCounts[id] || 0;
             const pct = Math.round((count / hotPosts.length) * 100);
             return (
-              <div key={id} style={{ marginBottom: 10 }}>
+              <div key={id} style={{ marginBottom: 11 }}>
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    marginBottom: 4,
+                    marginBottom: 5,
                   }}
                 >
-                  <span style={{ fontSize: 11, color: "#808090" }}>
+                  <span style={{ fontSize: 11, color: "#7c7c96" }}>
                     {label}
                   </span>
                   <span
                     style={{
                       fontSize: 11,
                       fontFamily: "Space Mono, monospace",
-                      color: "#606070",
+                      color: "#606074",
                     }}
                   >
                     {pct}%
@@ -372,7 +399,7 @@ function GeneralDiscovery({
                 <div
                   style={{
                     height: 3,
-                    background: "#1a1a28",
+                    background: "#202030",
                     borderRadius: 2,
                   }}
                 >
@@ -382,6 +409,7 @@ function GeneralDiscovery({
                       height: "100%",
                       background: color,
                       borderRadius: 2,
+                      boxShadow: `0 0 4px ${color}40`,
                     }}
                   />
                 </div>
@@ -520,33 +548,36 @@ export function DiscoverView({
         style={{
           width: 260,
           flexShrink: 0,
-          borderRight: "1px solid #131320",
+          borderRight: "1px solid #191926",
           overflowY: "auto",
           padding: "14px 12px",
         }}
       >
         <div
           style={{
-            fontSize: 10,
-            color: "#404060",
-            letterSpacing: "0.08em",
-            marginBottom: 8,
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            marginBottom: 10,
             paddingLeft: 4,
           }}
         >
-          TOPIC CLUSTERS · {clusters.length}
+          <div style={{ width: 2, height: 10, background: accent, borderRadius: 2, opacity: 0.5 }} />
+          <span style={{ fontSize: 10, fontWeight: 600, color: "#6c6c88", letterSpacing: "0.04em" }}>
+            CLUSTERS · {clusters.length}
+          </span>
         </div>
         <div
           onClick={() => setActiveCluster(null)}
           style={{
-            padding: "8px 12px",
+            padding: "7px 12px",
             borderRadius: 8,
             cursor: "pointer",
             marginBottom: 6,
-            background: !activeCluster ? "#161624" : "transparent",
+            background: !activeCluster ? accent + "14" : "transparent",
             border: `1px solid ${!activeCluster ? accent + "35" : "transparent"}`,
             fontSize: 12,
-            color: !activeCluster ? "#e0e0f0" : "#606080",
+            color: !activeCluster ? "#eeeef4" : "#626278",
             transition: "all 0.14s",
           }}
         >

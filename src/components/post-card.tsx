@@ -29,15 +29,17 @@ export function PostCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: isSelected ? "#1c1c2e" : hovered ? "#161624" : "#111119",
-        border: `1px solid ${isSelected ? accent + "60" : hovered ? "#2a2a3e" : "#1e1e2e"}`,
+        background: isSelected ? "#22222e" : hovered ? "#1c1c25" : "#141419",
+        border: `1px solid ${isSelected ? accent + "55" : hovered ? "#303046" : "#242436"}`,
         borderRadius: 12,
         padding: 16,
         cursor: "pointer",
         transition: "all 0.18s ease",
         boxShadow: isSelected
-          ? `0 0 0 1px ${accent}40, 0 4px 20px ${accent}15`
-          : "none",
+          ? `0 0 0 1px ${accent}30, 0 6px 24px ${accent}18, inset 0 2px 0 ${pm.color}80`
+          : hovered
+          ? `inset 0 2px 0 ${pm.color}65`
+          : `inset 0 2px 0 ${pm.color}40`,
       }}
     >
       {/* Header */}
@@ -71,17 +73,17 @@ export function PostCard({
               style={{
                 fontSize: 12,
                 fontWeight: 600,
-                color: "#e8e8f0",
+                color: "#eeeef4",
                 lineHeight: 1.2,
               }}
             >
               {post.displayName}
             </div>
-            <div style={{ fontSize: 11, color: "#606080" }}>{post.handle}</div>
+            <div style={{ fontSize: 11, color: "#636380" }}>{post.handle}</div>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 10, color: "#404060" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <span style={{ fontSize: 10, color: "#424258" }}>
             {post.postedAt}
           </span>
           <button
@@ -93,7 +95,7 @@ export function PostCard({
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: saved ? accent : "#404060",
+              color: saved ? accent : "#464662",
               padding: 2,
               display: "flex",
               transition: "color 0.15s",
@@ -113,9 +115,9 @@ export function PostCard({
       <p
         style={{
           fontSize: 12,
-          color: "#a0a0c0",
-          lineHeight: 1.55,
-          margin: "0 0 12px",
+          color: "#9696b0",
+          lineHeight: 1.6,
+          margin: "0 0 11px",
           display: "-webkit-box",
           WebkitLineClamp: 3,
           WebkitBoxOrient: "vertical",
@@ -140,7 +142,7 @@ export function PostCard({
             style={{
               fontSize: 10,
               color: accent,
-              background: accent + "15",
+              background: accent + "14",
               padding: "2px 7px",
               borderRadius: 4,
               fontFamily: "Space Mono, monospace",
@@ -157,13 +159,13 @@ export function PostCard({
           style={{
             display: "flex",
             justifyContent: "space-between",
-            marginBottom: 5,
+            marginBottom: 6,
           }}
         >
           <span
-            style={{ fontSize: 10, color: "#505070", letterSpacing: "0.06em" }}
+            style={{ fontSize: 10, color: "#525268", letterSpacing: "0.05em" }}
           >
-            TREND SCORE
+            Trend score
           </span>
         </div>
         <TrendBar score={post.trendScore} color={accent} />
@@ -174,25 +176,25 @@ export function PostCard({
         style={{
           display: "flex",
           gap: 12,
-          borderTop: "1px solid #1a1a28",
+          borderTop: "1px solid #202030",
           paddingTop: 11,
         }}
       >
         {[
-          { label: "\u2665", val: post.likes },
-          { label: "\u2197", val: post.shares },
-          { label: "\u2726", val: post.comments },
-          ...(post.views ? [{ label: "\u25C9", val: post.views }] : []),
+          { label: "♥", val: post.likes },
+          { label: "↗", val: post.shares },
+          { label: "✦", val: post.comments },
+          ...(post.views ? [{ label: "◉", val: post.views }] : []),
         ].map(({ label, val }) => (
           <div
             key={label}
             style={{ display: "flex", alignItems: "center", gap: 4 }}
           >
-            <span style={{ fontSize: 10, color: "#404060" }}>{label}</span>
+            <span style={{ fontSize: 10, color: "#424258" }}>{label}</span>
             <span
               style={{
                 fontSize: 11,
-                color: "#8080a8",
+                color: "#7c7c9a",
                 fontFamily: "Space Mono, monospace",
               }}
             >

@@ -3,19 +3,19 @@
 @theme {
   --font-sans: "Space Grotesk", sans-serif;
   --font-mono: "Space Mono", monospace;
-  --color-bg: #08080d;
-  --color-bg-card: #0f0f1a;
-  --color-bg-card-alt: #111119;
-  --color-bg-hover: #161624;
-  --color-bg-active: #1c1c2e;
-  --color-border: #1a1a28;
-  --color-border-light: #1e1e2e;
-  --color-border-header: #131320;
-  --color-text-primary: #e8e8f0;
-  --color-text-secondary: #a0a0c0;
-  --color-text-muted: #606080;
-  --color-text-dim: #505070;
-  --color-text-faint: #404060;
+  --color-bg: #0d0d12;
+  --color-bg-card: #141419;
+  --color-bg-card-alt: #17171d;
+  --color-bg-hover: #1c1c25;
+  --color-bg-active: #22222e;
+  --color-border: #202030;
+  --color-border-light: #28283a;
+  --color-border-header: #191926;
+  --color-text-primary: #eeeef4;
+  --color-text-secondary: #9898b2;
+  --color-text-muted: #626278;
+  --color-text-dim: #525268;
+  --color-text-faint: #424258;
 }
 
 *,
@@ -35,8 +35,8 @@ body,
 
 body {
   font-family: "Space Grotesk", sans-serif;
-  background: #08080d;
-  color: #e8e8f0;
+  background: #0d0d12;
+  color: #eeeef4;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -48,15 +48,15 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2a3e;
+  background: #2c2c40;
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a52;
+  background: #3c3c56;
 }
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2a2a3e transparent;
+  scrollbar-color: #2c2c40 transparent;
 }
 
 @keyframes fadeSlideIn {
@@ -67,6 +67,15 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -96,16 +105,16 @@ body {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #111119 25%, #1a1a28 50%, #111119 75%);
+  background: linear-gradient(90deg, #17171d 25%, #242436 50%, #17171d 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 8px;
 }
 
 input::placeholder {
-  color: #40405a;
+  color: #c0c0d8;
 }
 
 select option {
-  background: #0f0f1a;
+  background: #141419;
 }

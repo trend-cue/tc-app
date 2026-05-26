@@ -15,7 +15,7 @@ import { ProjectsView } from "./projects-view";
 import { ProjectPicker } from "./project-picker";
 import { ProfileView } from "./profile-view";
 
-const DEFAULT_ACCENT = "oklch(0.72 0.18 210)";
+const DEFAULT_ACCENT = "oklch(0.76 0.17 58)";
 
 function searchPosts(posts: Post[], query: string): Post[] {
   const tokens = query
@@ -86,9 +86,9 @@ function Header({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 28px",
-        borderBottom: "1px solid #131320",
-        background: "#08080d",
+        padding: "0 24px",
+        borderBottom: "1px solid #191926",
+        background: "#0d0d12",
         flexShrink: 0,
         position: "relative",
         zIndex: 10,
@@ -142,7 +142,7 @@ function Header({
           BETA
         </span>
       </div>
-      <nav style={{ display: "flex", gap: 2 }}>
+      <nav style={{ display: "flex", gap: 1 }}>
         {[
           { id: "discover", label: "Discover" },
           {
@@ -155,16 +155,17 @@ function Header({
             key={id}
             onClick={() => setTab(id)}
             style={{
-              padding: "5px 14px",
+              padding: "5px 15px",
               borderRadius: 7,
-              border: "none",
+              border: `1px solid ${tab === id ? accent + "35" : "transparent"}`,
               cursor: "pointer",
               fontSize: 13,
               fontWeight: tab === id ? 600 : 400,
-              color: tab === id ? "#e8e8f0" : "#606080",
-              background: tab === id ? "#161624" : "transparent",
+              color: tab === id ? "#eeeef4" : "#5a5a72",
+              background: tab === id ? accent + "14" : "transparent",
               fontFamily: "Space Grotesk, sans-serif",
               transition: "all 0.15s",
+              letterSpacing: tab === id ? "-0.01em" : "0",
             }}
           >
             {label}
@@ -177,19 +178,21 @@ function Header({
           onClick={onProfile}
           title="Open profile"
           style={{
-            width: 28,
-            height: 28,
+            width: 30,
+            height: 30,
             borderRadius: "50%",
-            background: profileActive ? accent + "22" : "#1a1a28",
-            border: `1px solid ${profileActive ? accent + "66" : "#252535"}`,
+            background: profileActive ? accent + "22" : "#1c1c28",
+            border: `1.5px solid ${profileActive ? accent + "66" : "#2a2a3e"}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
             fontFamily: "Space Grotesk, sans-serif",
+            transition: "all 0.15s",
+            boxShadow: profileActive ? `0 0 12px ${accent}20` : "none",
           }}
         >
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#8080a8" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: profileActive ? accent : "#7878a0" }}>
             {initials}
           </span>
         </button>
@@ -200,7 +203,7 @@ function Header({
             background: "none",
             border: "none",
             cursor: "pointer",
-            color: "#404060",
+            color: "#484862",
             display: "flex",
             padding: 4,
           }}
@@ -245,7 +248,7 @@ function AlertsView({ accent }: { accent: string }) {
           style={{
             fontSize: 15,
             fontWeight: 600,
-            color: "#c0c0e0",
+            color: "#c8c8e4",
             marginBottom: 6,
           }}
         >
@@ -714,7 +717,7 @@ export function AppShell() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "#08080d",
+        background: "#0d0d12",
       }}
       onClick={() => pickerState && setPickerState(null)}
     >
@@ -750,7 +753,7 @@ export function AppShell() {
                 flexShrink: 0,
               }}
             >
-              <span style={{ fontSize: 11, color: "#505070" }}>
+              <span style={{ fontSize: 11, color: "#565672" }}>
                 Results for
               </span>
               <span
@@ -758,11 +761,11 @@ export function AppShell() {
               >
                 &ldquo;{query}&rdquo;
               </span>
-              <span style={{ fontSize: 11, color: "#252540" }}>·</span>
+              <span style={{ fontSize: 11, color: "#303048" }}>·</span>
               <span
                 style={{
                   fontSize: 11,
-                  color: "#404060",
+                  color: "#565672",
                   fontFamily: "Space Mono, monospace",
                 }}
               >

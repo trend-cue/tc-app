@@ -139,8 +139,8 @@ function ProjectCard({
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background: hov ? "#141420" : "#0f0f1a",
-        border: `1px solid ${hov ? "#252535" : "#1a1a28"}`,
+        background: hov ? "#1c1c25" : "#141419",
+        border: `1px solid ${hov ? "#303048" : "#242436"}`,
         borderRadius: 14,
         overflow: "hidden",
         cursor: "pointer",
@@ -178,7 +178,7 @@ function ProjectCard({
           style={{
             fontSize: 14,
             fontWeight: 600,
-            color: "#e0e0f0",
+            color: "#eeeef4",
             marginBottom: 4,
             lineHeight: 1.3,
           }}
@@ -192,7 +192,7 @@ function ProjectCard({
             justifyContent: "space-between",
           }}
         >
-          <span style={{ fontSize: 11, color: "#505070" }}>
+          <span style={{ fontSize: 11, color: "#595972" }}>
             {posts.length} post{posts.length !== 1 ? "s" : ""}
           </span>
           <span style={{ fontSize: 10, color: "#404060" }}>
@@ -546,7 +546,7 @@ function ProjectDetail({
             </button>
           </div>
         )}
-        <span style={{ fontSize: 12, color: "#505070", marginLeft: 4 }}>
+        <span style={{ fontSize: 12, color: "#595972", marginLeft: 4 }}>
           {posts.length} post{posts.length !== 1 ? "s" : ""}
         </span>
         <button
@@ -748,7 +748,7 @@ export function ProjectsView({
           >
             Projects
           </h2>
-          <p style={{ fontSize: 12, color: "#505070", margin: 0 }}>
+          <p style={{ fontSize: 12, color: "#595972", margin: 0 }}>
             {sortedProjects.length} project
             {sortedProjects.length !== 1 ? "s" : ""} · organize saved trends by
             brand or campaign
@@ -779,7 +779,7 @@ export function ProjectsView({
       {creatingNew && (
         <div
           style={{
-            background: "#0f0f1a",
+            background: "#141419",
             border: `1px solid ${accent}30`,
             borderRadius: 12,
             padding: "16px 18px",

@@ -25,7 +25,7 @@ export function LoginForm() {
   const supabase = createClient();
   const inviteToken = searchParams.get("invite") || "";
 
-  const accent = "oklch(0.72 0.18 210)";
+  const accent = "oklch(0.76 0.17 58)";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,17 +85,37 @@ export function LoginForm() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#08080d",
+        background: "#0d0d12",
         fontFamily: "Space Grotesk, sans-serif",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
       <div
         style={{
-          width: 380,
-          background: "#0f0f1a",
-          border: "1px solid #1a1a28",
-          borderRadius: 16,
-          padding: "40px 32px",
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(ellipse 75% 55% at 50% 110%, ${accent}0c 0%, transparent 65%)`,
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(ellipse 40% 30% at 20% 20%, oklch(0.55 0.12 260 / 0.06) 0%, transparent 60%)`,
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          width: 400,
+          background: "#141419",
+          border: "1px solid #28283a",
+          borderRadius: 20,
+          padding: "44px 36px",
+          position: "relative",
+          boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03)",
         }}
       >
         {/* Logo */}
@@ -110,14 +130,14 @@ export function LoginForm() {
         >
           <div
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
+              width: 34,
+              height: 34,
+              borderRadius: 9,
               background: accent,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: `0 0 20px ${accent}`,
+              boxShadow: `0 4px 20px ${accent}50`,
             }}
           >
             <svg
@@ -159,9 +179,9 @@ export function LoginForm() {
 
         <h2
           style={{
-            fontSize: 16,
-            fontWeight: 600,
-            color: "#e8e8f0",
+            fontSize: 17,
+            fontWeight: 700,
+            color: "#eeeef4",
             textAlign: "center",
             marginBottom: 6,
           }}
@@ -171,7 +191,7 @@ export function LoginForm() {
         <p
           style={{
             fontSize: 13,
-            color: "#606080",
+            color: "#636280",
             textAlign: "center",
             marginBottom: 28,
           }}
@@ -188,8 +208,8 @@ export function LoginForm() {
             <label
               style={{
                 fontSize: 11,
-                color: "#505070",
-                letterSpacing: "0.06em",
+                color: "#646280",
+                letterSpacing: "0.05em",
                 display: "block",
                 marginBottom: 6,
               }}
@@ -204,20 +224,20 @@ export function LoginForm() {
               required
               style={{
                 width: "100%",
-                background: "#111119",
-                border: "1px solid #1e1e2e",
+                background: "#0d0d12",
+                border: "1px solid #242436",
                 borderRadius: 10,
                 padding: "12px 14px",
                 fontSize: 14,
-                color: "#e8e8f0",
+                color: "#eeeef4",
                 fontFamily: "Space Grotesk, sans-serif",
                 outline: "none",
               }}
               onFocus={(e) =>
-                (e.currentTarget.style.borderColor = `${accent}55`)
+                (e.currentTarget.style.borderColor = `${accent}60`)
               }
               onBlur={(e) =>
-                (e.currentTarget.style.borderColor = "#1e1e2e")
+                (e.currentTarget.style.borderColor = "#242436")
               }
             />
           </div>
@@ -226,8 +246,8 @@ export function LoginForm() {
             <label
               style={{
                 fontSize: 11,
-                color: "#505070",
-                letterSpacing: "0.06em",
+                color: "#646280",
+                letterSpacing: "0.05em",
                 display: "block",
                 marginBottom: 6,
               }}
@@ -246,20 +266,20 @@ export function LoginForm() {
               autoComplete={isSignUp ? "new-password" : "current-password"}
               style={{
                 width: "100%",
-                background: "#111119",
-                border: "1px solid #1e1e2e",
+                background: "#0d0d12",
+                border: "1px solid #242436",
                 borderRadius: 10,
                 padding: "12px 14px",
                 fontSize: 14,
-                color: "#e8e8f0",
+                color: "#eeeef4",
                 fontFamily: "Space Grotesk, sans-serif",
                 outline: "none",
               }}
               onFocus={(e) =>
-                (e.currentTarget.style.borderColor = `${accent}55`)
+                (e.currentTarget.style.borderColor = `${accent}60`)
               }
               onBlur={(e) =>
-                (e.currentTarget.style.borderColor = "#1e1e2e")
+                (e.currentTarget.style.borderColor = "#242436")
               }
             />
             {isSignUp && (
@@ -269,7 +289,7 @@ export function LoginForm() {
                   marginBottom: 0,
                   fontSize: 12,
                   lineHeight: 1.4,
-                  color: "#606080",
+                  color: "#636280",
                 }}
               >
                 {PASSWORD_POLICY_MESSAGE}
@@ -347,7 +367,7 @@ export function LoginForm() {
               color: "#fff",
               cursor: loading ? "wait" : "pointer",
               fontFamily: "Space Grotesk, sans-serif",
-              boxShadow: `0 0 20px ${accent}40`,
+              boxShadow: `0 4px 24px ${accent}35`,
               opacity: loading ? 0.7 : 1,
               transition: "opacity 0.15s",
             }}
@@ -363,9 +383,9 @@ export function LoginForm() {
         <div
           style={{
             textAlign: "center",
-            marginTop: 20,
+            marginTop: 22,
             fontSize: 13,
-            color: "#606080",
+            color: "#636280",
           }}
         >
           {isSignUp ? "Already have an account?" : "No account yet?"}{" "}
